@@ -1,0 +1,1 @@
+{"_runtime":38,"registered_aliases":"v1","_timestamp":1.755411977052523e+09,"_wandb":{"runtime":38},"git_commit":"b96b19c","data_artifact":"imdb_dataset-artifact:v0","n_samples":50000,"_step":0,"model_registered_name":"MultinomialNB-artifact:v0"}

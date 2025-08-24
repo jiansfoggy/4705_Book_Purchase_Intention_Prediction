@@ -1,0 +1,47 @@
+_wandb:
+    value:
+        cli_version: 0.21.1
+        e:
+            mwpvvkjzjmdbynsu1gc1hnoxd0g77r1b:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 10
+                    memoryGb: 8
+                    name: Apple M3
+                    pcpuCores: 4
+                    ramTotalBytes: "8589934592"
+                    swapTotalBytes: "9663676416"
+                codePath: FastAPI_Backend/main.py
+                codePathLocal: main.py
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "245107195904"
+                        used: "208644476928"
+                email: jian_sun@gwu.edu
+                executable: /Users/jiansun/Documents/4447/venv/bin/python3
+                git:
+                    commit: b96b19cf1380c2f7b270bcf9eda6e81a8eef3d9e
+                    remote: https://github.com/jiansfoggy/4705_Personalized_Book_Recommender.git
+                host: Mac
+                memory:
+                    total: "8589934592"
+                os: macOS-15.5-arm64-arm-64bit-Mach-O
+                program: /Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/FastAPI_Backend/main.py
+                python: CPython 3.13.5
+                root: /Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/FastAPI_Backend
+                startedAt: "2025-08-18T03:18:59.898679Z"
+                writerId: mwpvvkjzjmdbynsu1gc1hnoxd0g77r1b
+        m: []
+        python_version: 3.13.5
+        t:
+            "1":
+                - 53
+            "2":
+                - 5
+                - 53
+            "4": 3.13.5
+            "5": 0.21.1
+            "12": 0.21.1
+            "13": darwin-arm64
