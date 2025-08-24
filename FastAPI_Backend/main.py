@@ -42,7 +42,7 @@ def connect_dynamodb():
     # figure out the current environment: local or AWS learner lab EC2
     # connect to DynamoDB based on different environment
     if is_ec2_env():
-        # boto3 will pick up credentials from env 
+        # boto3 will pick up credentials from env
         # or ~/.aws/credentials automatically
         print("Detected EC2 (Learner Lab). Using IAM Role credentials...")
         dynamodb = boto3.resource("dynamodb", region_name=DDB_REGION)
@@ -78,7 +78,8 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
         return table
     except ClientError as e:
         err_code = e.response.get("Error", {}).get("Code", "")
-        if err_code not in ["ResourceNotFoundException", "ValidationException"]:
+        ex_ls = ["ResourceNotFoundException", "ValidationException"]
+        if err_code not in ex_ls:
             raise
 
         # load the existing DynamoDB table, 
@@ -87,9 +88,9 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
         try:
             new_table = dynamodb.create_table(
                     TableName=table_name,
-                    AttributeDefinitions=[{"AttributeName": "text_hash", 
+                    AttributeDefinitions=[{"AttributeName": "text_hash",
                                            "AttributeType": "S"}],
-                    KeySchema=[{"AttributeName": "text_hash", 
+                    KeySchema=[{"AttributeName": "text_hash",
                                 "KeyType": "HASH"}],
                     BillingMode="PAY_PER_REQUEST",
                     Tags=[{"Key": "final_project", "Value": "API_logs"}])
@@ -97,9 +98,9 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
             print(f"[DDB] Failed to create table: {create_err}")
             raise
 
-        new_table.meta.client.get_waiter('table_exists').wait(TableName=table_name,
-                                                              WaiterConfig={'Delay': 3,
-                                                                            'MaxAttempts': max(1, wait_timeout // 3)})
+        wait1 = new_table.meta.client.get_waiter('table_exists')
+        contt = {'Delay': 3, 'MaxAttempts': max(1, wait_timeout // 3)}
+        wait2 = wait1.wait(TableName=table_name, WaiterConfig=contt)
         table = dynamodb.Table(table_name)
         print(f"[DDB] Created table {table_name}")
         return table
@@ -164,7 +165,8 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
                              Recommender/{model_name}:{alias}")
         artifact = art.get_path("sentiment_model.pkl").download()
         # method 2
-        # artifact = run.use_model(name=f"jsfoggy/Personalized Book Recommender/{model_name}:{alias}")
+        # artifact = run.use_model(name=f"jsfoggy/Personalized Book \
+        #                                 Recommender/{model_name}:{alias}")
         model = joblib.load(artifact)
         print(f"Model '{model_name}:{alias}' loaded successfully from W&B.")
         return model
@@ -190,7 +192,7 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
 
 
 class TextInput(BaseModel):
-    text: str = Field(..., json_schema_extra={"example": 
+    text: str = Field(..., json_schema_extra={"example":
                                               "I loved this movie!"})
     true_sentiment: str = Field(..., json_schema_extra={"example": "Positive"})
 
