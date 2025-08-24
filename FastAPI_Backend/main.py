@@ -82,9 +82,10 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
         if err_code not in ex_ls:
             raise
 
-        # load the existing DynamoDB table, 
+        # load the existing DynamoDB table,
         # otherwise, create new DynamoDB table
         print(f"[DDB] Table '{table_name}' not found - creating...")
+        er_ls = (ClientError, NoCredentialsError, EndpointConnectionError)
         try:
             new_table = dynamodb.create_table(
                     TableName=table_name,
@@ -94,13 +95,13 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
                                 "KeyType": "HASH"}],
                     BillingMode="PAY_PER_REQUEST",
                     Tags=[{"Key": "final_project", "Value": "API_logs"}])
-        except (ClientError, NoCredentialsError, EndpointConnectionError) as create_err:
+        except er_ls as create_err:
             print(f"[DDB] Failed to create table: {create_err}")
             raise
 
         wait1 = new_table.meta.client.get_waiter('table_exists')
         contt = {'Delay': 3, 'MaxAttempts': max(1, wait_timeout // 3)}
-        wait2 = wait1.wait(TableName=table_name, WaiterConfig=contt)
+        wait1.wait(TableName=table_name, WaiterConfig=contt)
         table = dynamodb.Table(table_name)
         print(f"[DDB] Created table {table_name}")
         return table
