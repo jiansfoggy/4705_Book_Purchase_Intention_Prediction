@@ -1,0 +1,63 @@
+# https://docs.github.com/zh/actions/tutorials/build-and-test-code/python
+name: CI-CD Pipeline
+
+on: 
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install flake8 pytest pytest-asyncio ruff
+          python3 -m pip install -r ./requirements.txt
+
+      - name: Check style issue with Flake8
+        run: |
+          echo "Use Flake8"
+          flake8 ./FastAPI_Backend/main.py
+          flake8 ./Model_Management/train_model.py
+          flake8 ./Monitor_Streamlit/monitor_app.py
+          flake8 ./Streamlit_Frontend/frontend_app.py
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+      # - name: Check style issue with Ruff
+      #   run: |
+      #     echo "Use Ruff"
+      #     ruff check --output-format=github --target-version=py313
+      #     ruff format --diff --target-version=py313
+      #   continue-on-error: true
+
+      - name: Run pytest on FastAPI_Backend
+        run: |
+          pytest -v ./FastAPI_Backend/test_backend.py
+
+      - name: Run pytest on Model_Management
+        run: |
+          pytest -v ./Model_Management/test_manage.py
+
+      - name: Run pytest on Monitor_Streamlit
+        run: |
+          pytest -v ./Monitor_Streamlit/test_dashboard.py
+
+      - name: Run pytest on Streamlit_Frontend
+        run: |
+          pytest -v ./Streamlit_Frontend/test_frontend.py
