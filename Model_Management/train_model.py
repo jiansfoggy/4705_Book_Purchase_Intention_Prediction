@@ -154,7 +154,7 @@ def main():
         # if metrics["accuracy"] >= promote_to_production_threshold:
         #     aliases = ["latest", "production"]
         artifact_data, artifact_model = log_artifact(
-            run, data_path=file_path, model_path=ckpt_path, 
+            run, data_path=file_path, model_path=ckpt_path,
             dataset_name="imdb_dataset", model_name=run.config["model_name"],
             alias="v1", metadata=None)
 
