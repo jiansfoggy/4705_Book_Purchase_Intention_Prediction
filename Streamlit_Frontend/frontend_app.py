@@ -32,12 +32,12 @@ st.text("This app accepts any movie review the \
 # 3. Create the User Input Interface
 user_text = st.text_area("Enter a movie review to analyze:",
                          "Enter text here...", height=200)
-true_label = st.text_area("Enter a true sentiment:", 
+true_label = st.text_area("Enter a true sentiment:",
                           "Enter text here...", height=200)
-# 4. Add analyze button & Write an if block that checks 
+# 4. Add analyze button & Write an if block that checks
 #    if the "Analyze" button has been pressed
 if st.button("Analyze"):
-    # Make sure the user has entered some text 
+    # Make sure the user has entered some text
     # before trying to make a prediction.
     if not user_text:
         st.write("Please write review before analyzing.")
@@ -52,7 +52,7 @@ if st.button("Analyze"):
         else:
             st.error(f"Predicted Sentiment: {pred} \U0001F44E")
         st.subheader('Welcome to try again.')
-        
+
 
 # API_BASE = "http://localhost:8000"   # 或从环境变量读取
 # PREDICT_URL = f"{API_BASE.rstrip('/')}/predict"
@@ -77,4 +77,5 @@ if st.button("Analyze"):
 #             err = resp.json().get("detail", resp.text)
 #         except Exception:
 #             err = resp.text
-#         raise RuntimeError(f"Backend returned HTTP {resp.status_code}: {err}") from e
+#         raise RuntimeError(f"Backend returned HTTP \
+#                              {resp.status_code}: {err}") from e
