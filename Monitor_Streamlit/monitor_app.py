@@ -89,7 +89,7 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
                     TableName=table_name,
                     AttributeDefinitions=[{"AttributeName": "text_hash",
                                            "AttributeType": "S"}],
-                    KeySchema=[{"AttributeName": "text_hash", 
+                    KeySchema=[{"AttributeName": "text_hash",
                                 "KeyType": "HASH"}],
                     BillingMode="PAY_PER_REQUEST",
                     Tags=[{"Key": "final_project", "Value": "API_logs"}])

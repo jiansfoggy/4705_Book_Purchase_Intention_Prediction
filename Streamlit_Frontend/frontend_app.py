@@ -30,7 +30,7 @@ st.text("This app accepts any movie review the \
          sentiment of the words, positive or negative.")
 
 # 3. Create the User Input Interface
-user_text = st.text_area("Enter a movie review to analyze:", 
+user_text = st.text_area("Enter a movie review to analyze:",
                          "Enter text here...", height=200)
 true_label = st.text_area("Enter a true sentiment:", 
                           "Enter text here...", height=200)
@@ -78,4 +78,3 @@ if st.button("Analyze"):
 #         except Exception:
 #             err = resp.text
 #         raise RuntimeError(f"Backend returned HTTP {resp.status_code}: {err}") from e
-
