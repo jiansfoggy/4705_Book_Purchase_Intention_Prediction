@@ -1,0 +1,22 @@
+# Local Environment
+.DS_Store
+*.swp
+*.swo
+AWS_EC2/
+data/
+
+# Python Related
+__pycache__/ 
+*.pyc
+.env
+*.env
+
+# Log
+*.log 
+*.dump 
+
+# Other
+*.tmp 
+*.bak
+*.orig
+ci.yml
