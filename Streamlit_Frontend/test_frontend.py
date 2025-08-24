@@ -1,6 +1,7 @@
 import frontend_app
 import os
 import pytest
+import requests
 from frontend_app import backend_predict
 
 DDB_REGION = os.environ.get("AWS_REGION", "us-east-1")
