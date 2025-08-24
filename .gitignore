@@ -11,6 +11,8 @@ __pycache__/
 *.pyc
 .env
 *.env
+*backup_main.py
+*read_data.py
 
 # Log
 *.log 
