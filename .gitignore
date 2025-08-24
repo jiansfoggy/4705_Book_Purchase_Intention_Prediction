@@ -4,6 +4,7 @@
 *.swo
 AWS_EC2/
 data/
+*command
 
 # Python Related
 __pycache__/ 
@@ -20,3 +21,6 @@ __pycache__/
 *.bak
 *.orig
 ci.yml
+*file_update_git.sh
+*file_upload_git.sh
+*git_init.sh

@@ -184,7 +184,7 @@ To build FastAPI, there are 3 essential files: `main.py`, `Dockerfile`, `Makefil
 
 ## 2.3 Query Endpoints Locally
 
-# 2.3.1 Quickly Debug
+### 2.3.1 Quickly Debug
 
 - In the `./FastAPI_Backend`, run `python3 main_local.py` to debug. If no error pops out and it returns the prediction result, it means the code is no bug.
 
@@ -205,7 +205,7 @@ To build FastAPI, there are 3 essential files: `main.py`, `Dockerfile`, `Makefil
     Sample result: {'sentiment': 'positive'}
     ```
 
-# 2.3.2 Deploy to Docker Environment
+### 2.3.2 Deploy to Docker Environment
 
 - Given that the program is deployed in the Docker environment, it can't read `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc from local machine. We need to take these information to Docker environment while building it.
    
@@ -280,6 +280,36 @@ curl -X POST \
      -d '{"text":"Bad weather, bad movie, bad day!!Feel bad","true_sentiment":"Negative"}' \
      http://0.0.0.0:8000/predict
 ```
+
+Features & Endpoints
+
+Test the follow command in the Postman
+
+### **1. `GET /health`**
+- **Purpose**: Health check to ensure the API is running.
+- **Response**: `{ "status": "ok" }`
+
+### **2. `POST /predict`**
+- **Purpose**: Classify input text as Positive or Negative.
+* **Running Example**: http://127.0.0.1:8000/predict?text=This%20movie%20was%20a%20masterpiece!&true_sentiment=Positive.
+- **Request Body**:
+  ```json
+  {
+    "text": "I love this!",
+    "true_sentiment":"Positive"
+  }
+  ```
+* **Successful Response**:
+
+  ```json
+  {
+    "sentiment": "Positive"
+  }
+  ```
+* **Error Cases**:
+
+  * `400 Bad Request` if the text is empty.
+  * `503 Service Unavailable` if the model fails to load.
 
 ## 2.4 Check Cache in Amazon DynamoDB
 
@@ -511,44 +541,30 @@ Go to github and set up pull request.
 
 1. Click **Pull requests**
 2. Click **New pull request**
-3. 
+3. Take `main` as base, `dev` as compare
+4. Click **Create pull request**
+5. Submit a new commit
+
+## Phase 5: Containerization and Deployment
+
+## 5.1. Docker Packaging
+
+* All three folders `FastAPI_Backend`, `Monitor_Streamlit`, `Streamlit_Frontend` have individual `Dockerfile`
+
+* `./4705_Personalized_Book_Recommender/Makefile` creates separate docker images and containers for FastAPI Backend and Streamlit Frontend
+
+* `./4705_Personalized_Book_Recommender/Monitor_Streamlit/Makefile` creates docker image and container for Streamlit Monitor Dashboard.
+
+## 5.2. AWS Deployment
+
+
+## 5.3. Documentation
+
+This is the required `README.md`.
 
 
 
 ---
-
-## Features & Endpoints
-
-Test the follow command in the Postman
-
-### **1. `GET /health`**
-- **Purpose**: Health check to ensure the API is running.
-- **Response**: `{ "status": "ok" }`
-
-### **2. `POST /predict`**
-- **Purpose**: Classify input text as Positive or Negative.
-* **Running Example**: http://127.0.0.1:8000/predict?text=This%20movie%20was%20a%20masterpiece!&true_sentiment=Positive.
-- **Request Body**:
-  ```json
-  {
-    "text": "I love this!",
-    "true_sentiment":"Positive"
-  }
-  ```
-* **Successful Response**:
-
-  ```json
-  {
-    "sentiment": "Positive"
-  }
-  ```
-* **Error Cases**:
-
-  * `400 Bad Request` if the text is empty.
-  * `503 Service Unavailable` if the model fails to load.
-
-
-
 
 ---
 

@@ -6,8 +6,8 @@ import os
 import requests
 import time
 import wandb
-import pandas as pd
-from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
+from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import EndpointConnectionError
 from decimal import Decimal
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
@@ -17,6 +17,7 @@ DDB_TABLE_NAME = os.environ.get("DDB_TABLE", "Backend_Log_Cache")
 DDB_REGION = os.environ.get("AWS_REGION", "us-east-1")
 os.makedirs("./logs", exist_ok=True)
 # https://chatgpt.com/s/t_68a724a091f48191baf58040a1f34bc8
+
 
 # ================================
 # = Check Running Environment:   =
@@ -41,12 +42,14 @@ def connect_dynamodb():
     # figure out the current environment: local or AWS learner lab EC2
     # connect to DynamoDB based on different environment
     if is_ec2_env():
-        # boto3 will pick up credentials from env or ~/.aws/credentials automatically
+        # boto3 will pick up credentials from env 
+        # or ~/.aws/credentials automatically
         print("Detected EC2 (Learner Lab). Using IAM Role credentials...")
         dynamodb = boto3.resource("dynamodb", region_name=DDB_REGION)
         return dynamodb
     else:
-        print("Detected local environment. Using AWS credentials from env/config...")
+        print("Detected local environment. \
+               Using AWS credentials from env/config...")
         aws_key = os.getenv("AWS_ACCESS_KEY_ID")
         aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
         aws_token = os.getenv("AWS_SESSION_TOKEN")
@@ -75,41 +78,46 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
         return table
     except ClientError as e:
         err_code = e.response.get("Error", {}).get("Code", "")
-        if err_code not in ("ResourceNotFoundException", "ValidationException"):
+        if err_code not in ["ResourceNotFoundException", "ValidationException"]:
             raise
 
-        # load the existing DynamoDB table, otherwise, create new DynamoDB table
-        print(f"[DDB] Table '{table_name}' not found - creating...") 
+        # load the existing DynamoDB table, 
+        # otherwise, create new DynamoDB table
+        print(f"[DDB] Table '{table_name}' not found - creating...")
         try:
             new_table = dynamodb.create_table(
                     TableName=table_name,
-                    AttributeDefinitions=[{"AttributeName": "text_hash", "AttributeType": "S"}],
-                    KeySchema=[{"AttributeName": "text_hash", "KeyType": "HASH"}],
+                    AttributeDefinitions=[{"AttributeName": "text_hash", 
+                                           "AttributeType": "S"}],
+                    KeySchema=[{"AttributeName": "text_hash", 
+                                "KeyType": "HASH"}],
                     BillingMode="PAY_PER_REQUEST",
-                    Tags=[{"Key":"final_project","Value":"API_logs"}])
+                    Tags=[{"Key": "final_project", "Value": "API_logs"}])
         except (ClientError, NoCredentialsError, EndpointConnectionError) as create_err:
-                print(f"[DDB] Failed to create table: {create_err}")
-                raise
+            print(f"[DDB] Failed to create table: {create_err}")
+            raise
 
         new_table.meta.client.get_waiter('table_exists').wait(TableName=table_name,
-            WaiterConfig={'Delay': 3, 'MaxAttempts': max(1, wait_timeout // 3)})
+                                                              WaiterConfig={'Delay': 3,
+                                                                            'MaxAttempts': max(1, wait_timeout // 3)})
         table = dynamodb.Table(table_name)
         print(f"[DDB] Created table {table_name}")
         return table
 
 
 def query_dynamodb_cache(text: str, table=None):
-    """Return stored item or None. Item contains predicted_sentiment and true_sentiment etc."""
+    # Return stored item or None.
+    # Item contains predicted_sentiment and true_sentiment etc.
     text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
     resp = table.get_item(Key={"text_hash": text_hash})
     if resp:
         return resp.get("Item")
     else:
-        print(f"[DDB] get_item error")
+        print("[DDB] get_item error")
         return None
-    
 
-def log_cache(text,pred,true_label,table):
+
+def log_cache(text, pred, true_label, table):
     text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
     ts = time.time()
     data = {
@@ -123,11 +131,11 @@ def log_cache(text,pred,true_label,table):
     with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)
         f.write("\n")
-    print(f"Create local log file at ./logs/prediction_logs.json")
-    data["timestamp"]=Decimal(str(ts))
+    print("Create local log file at ./logs/prediction_logs.json")
+    data["timestamp"] = Decimal(str(ts))
     try:
         table.put_item(Item=data)
-        print(f"[DDB] put succeed: Cache data to DynamoDB")
+        print("[DDB] put succeed: Cache data to DynamoDB")
     except ClientError as e:
         print(f"[DDB] put failed for: {text_hash} error: {e}")
 
@@ -146,15 +154,17 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
     # method 1
     api = wandb.Api()
     # method 2
-    # run = wandb.init(project="Personalized Book Recommender", entity="jsfoggy", job_type="inference")
+    # run = wandb.init(project="Personalized Book Recommender",
+    #                  entity="jsfoggy", job_type="inference")
     try:
         # Pull certain version from Model Registry
         # and Download to local path
         # method 1
-        art = api.artifact(f"jsfoggy/Personalized Book Recommender/{model_name}:{alias}")
-        artifact=art.get_path("sentiment_model.pkl").download()
+        art = api.artifact(f"jsfoggy/Personalized Book \
+                             Recommender/{model_name}:{alias}")
+        artifact = art.get_path("sentiment_model.pkl").download()
         # method 2
-        # artifact = run.use_model(name=f"jsfoggy/Personalized Book Recommender/{model_name}:{alias}") 
+        # artifact = run.use_model(name=f"jsfoggy/Personalized Book Recommender/{model_name}:{alias}")
         model = joblib.load(artifact)
         print(f"Model '{model_name}:{alias}' loaded successfully from W&B.")
         return model
@@ -180,7 +190,8 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
 
 
 class TextInput(BaseModel):
-    text: str = Field(..., json_schema_extra={"example": "I loved this movie!"})
+    text: str = Field(..., json_schema_extra={"example": 
+                                              "I loved this movie!"})
     true_sentiment: str = Field(..., json_schema_extra={"example": "Positive"})
 
 
@@ -247,11 +258,11 @@ async def predict(input_data: TextInput):
     if true_label not in ["negative", "positive"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="True_label can only be either negative or positive."
-            )
-    
+            detail="True_label can only be either negative or positive.")
+
     # 1) After getting text, check if it is already cached in the DynamoDB.
-    table = ensure_table(create_if_missing=True)  # set True if you want code to auto-create table
+    # set True if you want code to auto-create table
+    table = ensure_table(create_if_missing=True)
     print("Table status:", table.table_status)
     item = query_dynamodb_cache(text, table=table)
 
@@ -260,9 +271,10 @@ async def predict(input_data: TextInput):
         # item may store predicted_sentiment as string
         pred = item.get("predicted_sentiment")
         return {"sentiment": pred, "cached": True}
-    
+
     # 2) Not found in DB => do prediction
-    model = load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest")
+    model = load_model_from_wandb(model_name="MultinomialNB-artifact",
+                                  alias="latest")
     if model is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
