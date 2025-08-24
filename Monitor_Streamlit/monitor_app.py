@@ -76,19 +76,21 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
         return table
     except ClientError as e:
         err_code = e.response.get("Error", {}).get("Code", "")
-        if err_code not in ("ResourceNotFoundException", "ValidationException"):
+        ex_ls2 = ["ResourceNotFoundException", "ValidationException"]
+        if err_code not in ex_ls2:
             raise
 
-        # load the existing DynamoDB table, 
+        # load the existing DynamoDB table,
         # otherwise, create new DynamoDB table
         print(f"[DDB] Table '{table_name}' not found - creating...")
         er_ls = (ClientError, NoCredentialsError, EndpointConnectionError)
         try:
             new_table = dynamodb.create_table(
                     TableName=table_name,
-                    AttributeDefinitions=[{"AttributeName": "text_hash", 
+                    AttributeDefinitions=[{"AttributeName": "text_hash",
                                            "AttributeType": "S"}],
-                    KeySchema=[{"AttributeName": "text_hash", "KeyType": "HASH"}],
+                    KeySchema=[{"AttributeName": "text_hash", 
+                                "KeyType": "HASH"}],
                     BillingMode="PAY_PER_REQUEST",
                     Tags=[{"Key": "final_project", "Value": "API_logs"}])
         except er_ls as create_err:
