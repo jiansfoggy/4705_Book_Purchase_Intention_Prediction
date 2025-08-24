@@ -1,13 +1,11 @@
 import boto3
-import hashlib
-import joblib
-import json
 import os
 import requests
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
+from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -42,12 +40,14 @@ def connect_dynamodb():
     # figure out the current environment: local or AWS learner lab EC2
     # connect to DynamoDB based on different environment
     if is_ec2_env():
-        # boto3 will pick up credentials from env or ~/.aws/credentials automatically
+        # boto3 will pick up credentials from env \
+        # or ~/.aws/credentials automatically
         print("Detected EC2 (Learner Lab). Using IAM Role credentials...")
         dynamodb = boto3.resource("dynamodb", region_name=DDB_REGION)
         return dynamodb
     else:
-        print("Detected local environment. Using AWS credentials from env/config...")
+        print("Detected local environment. \
+               Using AWS credentials from env/config...")
         aws_key = os.getenv("AWS_ACCESS_KEY_ID")
         aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
         aws_token = os.getenv("AWS_SESSION_TOKEN")
@@ -79,8 +79,10 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
         if err_code not in ("ResourceNotFoundException", "ValidationException"):
             raise
 
-        # load the existing DynamoDB table, otherwise, create new DynamoDB table
-        print(f"[DDB] Table '{table_name}' not found - creating...") 
+        # load the existing DynamoDB table, 
+        # otherwise, create new DynamoDB table
+        print(f"[DDB] Table '{table_name}' not found - creating...")
+        er_ls = (ClientError, NoCredentialsError, EndpointConnectionError)
         try:
             new_table = dynamodb.create_table(
                     TableName=table_name,
@@ -88,13 +90,14 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
                                            "AttributeType": "S"}],
                     KeySchema=[{"AttributeName": "text_hash", "KeyType": "HASH"}],
                     BillingMode="PAY_PER_REQUEST",
-                    Tags=[{"Key":"final_project","Value":"API_logs"}])
-        except (ClientError, NoCredentialsError, EndpointConnectionError) as create_err:
-                print(f"[DDB] Failed to create table: {create_err}")
-                raise
+                    Tags=[{"Key": "final_project", "Value": "API_logs"}])
+        except er_ls as create_err:
+            print(f"[DDB] Failed to create table: {create_err}")
+            raise
 
-        new_table.meta.client.get_waiter('table_exists').wait(TableName=table_name,
-            WaiterConfig={'Delay': 3, 'MaxAttempts': max(1, wait_timeout // 3)})
+        t1 = new_table.meta.client.get_waiter('table_exists')
+        d1 = {'Delay': 3, 'MaxAttempts': max(1, wait_timeout // 3)}
+        t1.wait(TableName=table_name, WaiterConfig=d1)
         table = dynamodb.Table(table_name)
         print(f"[DDB] Created table {table_name}")
         return table
@@ -128,8 +131,8 @@ def log_dynamodb_caches2(table=None):
       preds: list of predicted_sentiment
       true_sent: list of true_sentiment (capitalized')
     """
-    expr_names = {"#r": "request_text", 
-                  "#p": "predicted_sentiment", 
+    expr_names = {"#r": "request_text",
+                  "#p": "predicted_sentiment",
                   "#t": "true_sentiment"}
     projection = ", ".join(expr_names.keys())  # "#r, #p, #t"
     scan_kwargs = {
@@ -154,8 +157,9 @@ def log_dynamodb_caches2(table=None):
                 texts.append(it.get("request_text", ""))
                 preds.append(it.get("predicted_sentiment", "").capitalize())
                 ts = it.get("true_sentiment", "")
-                true_sent.append(ts.capitalize() if isinstance(ts, str) else ts)
-    
+                true_sent.append(
+                    ts.capitalize() if isinstance(ts, str) else ts)
+
     except ClientError as e:
         try:
             st.error(f"[DDB] scan failed: {e}")
@@ -171,7 +175,7 @@ def log_dynamodb_caches2(table=None):
         print(f"[DDB] unexpected scan error: {e}")
         return [], [], []
 
-    return texts, preds, true_sent 
+    return texts, preds, true_sent
 
 
 # ======================
@@ -203,13 +207,12 @@ def main():
              Movie Review Sentiment Analyzer, a FastAPI.")
 
     # 3. Load the Log and IMDB data
-    log_path = Path("./logs/prediction_logs.json")
     st.header("1. Loading Log and IMDB Data")
 
     load_table = ensure_table(create_if_missing=True)
     print("Table status:", load_table.table_status)
     texts, preds, true_sent = log_dynamodb_caches2(table=load_table)
-    
+
     st.write(f"Finish DataLoading. Loaded {len(texts)} log entries.")
     text_len = [len(t) for t in texts]
     text_len = sorted(text_len)
