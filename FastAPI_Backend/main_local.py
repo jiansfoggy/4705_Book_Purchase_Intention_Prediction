@@ -104,7 +104,7 @@ def query_dynamodb_cache(text: str, table=None):
     if resp:
         return resp.get("Item")
     else:
-        print(f"[DDB] get_item error: {e}")
+        print(f"[DDB] get_item error")
         return None
     
 
