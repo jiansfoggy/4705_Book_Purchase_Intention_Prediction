@@ -15,10 +15,8 @@ class FakeTable:
 
     def load(self):
         if not self._exists:
-            raise ClientError(
-                {"Error": {"Code": "ResourceNotFoundException", "Message": "Not found"}},
-                "DescribeTable"
-            )
+            d1 = {"Code": "ResourceNotFoundException", "Message": "Not found"}
+            raise ClientError({"Error": d1}, "DescribeTable")
 
     def get_item(self, Key):
         text_hash = Key["text_hash"]
@@ -29,7 +27,7 @@ class FakeTable:
     def put_item(self, Item):
         self._storage[Item["text_hash"]] = Item
         return {"ResponseMetadata": {"HTTPStatusCode": 200}}
-        
+
 
 class FakeResource:
     def __init__(self, existing_tables=None):
@@ -39,14 +37,17 @@ class FakeResource:
         return FakeTable(name, exists=(name in self._existing))
 
     def create_table(self, **kwargs):
-        # Simulate creation and return an object with meta.client.get_waiter('table_exists').wait
+        # Simulate creation and return an object with 
+        # meta.client.get_waiter('table_exists').wait
         name = kwargs.get("TableName")
         # add to existing set
         self._existing.add(name)
+
         class NewTable:
             def __init__(self, name):
                 self.table_name = name
                 self.table_status = "CREATING"
+
                 class MetaClient:
                     def get_waiter(self, _):
                         class Waiter:
@@ -63,7 +64,7 @@ def test_ensure_table_existing(monkeypatch):
     fake_resource = FakeResource(existing_tables=[table_name])
     monkeypatch.setattr(monitor_app, "connect_dynamodb", lambda: fake_resource)
 
-    tbl = monitor_app.ensure_table(table_name=table_name, create_if_missing=False)
+    tbl = ensure_table(table_name=table_name, create_if_missing=False)
     assert tbl is not None
     assert getattr(tbl, "table_name") == table_name
     assert tbl.table_status == "ACTIVE" or hasattr(tbl, "table_status")
@@ -74,7 +75,10 @@ def test_ensure_table_creates_if_missing(monkeypatch):
     fake_resource = FakeResource(existing_tables=[])
     monkeypatch.setattr(monitor_app, "connect_dynamodb", lambda: fake_resource)
 
-    tbl = monitor_app.ensure_table(table_name=table_name, create_if_missing=True, wait_timeout=5)
+    tbl = ensure_table(
+        table_name=table_name, 
+        create_if_missing=True, 
+        wait_timeout=5)
     assert tbl is not None
     assert tbl.table_name == table_name
 
@@ -84,7 +88,7 @@ def test_main(monkeypatch):
     monkeypatch.setattr(monitor_app, "connect_dynamodb", lambda: fake_resource)
 
     try:
-        monitor_app.main()
+        main()
     except Exception as exc:
         pytest.fail(f"Calling main() raised an exception: {exc}")
 

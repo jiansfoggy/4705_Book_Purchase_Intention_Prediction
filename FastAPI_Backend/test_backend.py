@@ -2,7 +2,6 @@ import main
 import pytest
 import types
 from botocore.exceptions import ClientError
-from fastapi import HTTPException
 from main import ensure_table, predict, TextInput
 
 
@@ -14,11 +13,9 @@ class FakeTable:
         self._storage = {}
 
     def load(self):
+        d1 = {"Code": "ResourceNotFoundException", "Message": "Not found"}
         if not self._exists:
-            raise ClientError(
-                {"Error": {"Code": "ResourceNotFoundException", "Message": "Not found"}},
-                "DescribeTable"
-            )
+            raise ClientError({"Error": d1}, "DescribeTable")
 
     def get_item(self, Key):
         text_hash = Key["text_hash"]
@@ -29,7 +26,7 @@ class FakeTable:
     def put_item(self, Item):
         self._storage[Item["text_hash"]] = Item
         return {"ResponseMetadata": {"HTTPStatusCode": 200}}
-        
+
 
 class FakeResource:
     def __init__(self, existing_tables=None):
@@ -39,14 +36,17 @@ class FakeResource:
         return FakeTable(name, exists=(name in self._existing))
 
     def create_table(self, **kwargs):
-        # Simulate creation and return an object with meta.client.get_waiter('table_exists').wait
+        # Simulate creation and return an object with 
+        # meta.client.get_waiter('table_exists').wait
         name = kwargs.get("TableName")
         # add to existing set
         self._existing.add(name)
+
         class NewTable:
             def __init__(self, name):
                 self.table_name = name
                 self.table_status = "CREATING"
+
                 class MetaClient:
                     def get_waiter(self, _):
                         class Waiter:
@@ -56,6 +56,14 @@ class FakeResource:
                         return Waiter()
                 self.meta = types.SimpleNamespace(client=MetaClient())
         return NewTable(name)
+
+
+class FakeModel:
+    def predict(self, X):
+        if "bad" in X[0].lower():
+            return ["Negative"]
+        else:
+            return ["Positive"]
 
 
 def test_ensure_table_existing(monkeypatch):
@@ -74,7 +82,10 @@ def test_ensure_table_creates_if_missing(monkeypatch):
     fake_resource = FakeResource(existing_tables=[])
     monkeypatch.setattr(main, "connect_dynamodb", lambda: fake_resource)
 
-    tbl = main.ensure_table(table_name=table_name, create_if_missing=True, wait_timeout=5)
+    tbl = main.ensure_table(
+        table_name=table_name, 
+        create_if_missing=True, 
+        wait_timeout=5)
     assert tbl is not None
     assert tbl.table_name == table_name
 
@@ -85,7 +96,10 @@ def test_ensure_table_creates_if_missing(monkeypatch):
     ("So bad. So boring.", "Negative"),
     ])
 async def test_predict2(monkeypatch, text, true_label):
-    monkeypatch.setattr(main, "ensure_table", lambda *args, **kwargs: FakeTable("Backend_Log_Cache"))
+    monkeypatch.setattr(main, "ensure_table", lambda *args,
+                        **kwargs: FakeTable("Backend_Log_Cache"))
+    monkeypatch.setattr(main, "load_model_from_wandb", lambda *args, 
+                        **kwargs: FakeModel())
     # fake_resource = FakeResource(existing_tables={"Backend_Log_Cache"})
     # monkeypatch.setattr(main.boto3, "resource", lambda *args, **kwargs: fake_resource)
     payload = TextInput(text=text, true_sentiment=true_label)
@@ -99,7 +113,7 @@ async def test_predict2(monkeypatch, text, true_label):
     (124234, " ", 422, "Text must be string."),
     ])
 async def test_predict3(monkeypatch, text, true_label, stat_code, expected_detail):
-    monkeypatch.setattr(main, "ensure_table", lambda *args, 
+    monkeypatch.setattr(main, "ensure_table", lambda *args,
                         **kwargs: FakeTable("Backend_Log_Cache"))
     payload = TextInput.model_construct(
         text=text,

@@ -2,9 +2,11 @@ import json
 import requests
 from sklearn.metrics import accuracy_score
 
+
 def load_test_data(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
 
 def get_prediction(text, true_label, url="http://localhost:8000/predict"):
     payload = {
@@ -14,6 +16,7 @@ def get_prediction(text, true_label, url="http://localhost:8000/predict"):
     resp = requests.post(url, json=payload)
     resp.raise_for_status()
     return resp.json()["sentiment"]
+
 
 def main():
     test_data = load_test_data("./test.json")
@@ -36,6 +39,7 @@ def main():
     # compute accuracy
     accuracy = accuracy_score(y_true, y_pred)
     print(f"Overall Accuracy is {accuracy:.2%}.")
+
 
 if __name__ == "__main__":
     main()

@@ -21,7 +21,7 @@ class MockResponse:
 
 
 @pytest.mark.parametrize("true_label", [("Positive")])
-def test_backend_predict(monkeypatch,true_label):
+def test_backend_predict(monkeypatch, true_label):
     def mock_post(url, json, timeout):
         assert url.endswith("/predict")
         assert "text" in json and "true_sentiment" in json
