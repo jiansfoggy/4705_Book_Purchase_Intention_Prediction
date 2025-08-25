@@ -146,7 +146,7 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
     # method 1
     api = wandb.Api()
     # method 2
-    # run = wandb.init(project="Personalized Book Recommender", 
+    # run = wandb.init(project="Personalized Book Recommender",
     #                  entity="jsfoggy", job_type="inference")
     try:
         # Pull certain version from Model Registry

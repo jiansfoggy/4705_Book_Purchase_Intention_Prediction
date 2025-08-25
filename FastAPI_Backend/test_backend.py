@@ -36,7 +36,7 @@ class FakeResource:
         return FakeTable(name, exists=(name in self._existing))
 
     def create_table(self, **kwargs):
-        # Simulate creation and return an object with 
+        # Simulate creation and return an object with
         # meta.client.get_waiter('table_exists').wait
         name = kwargs.get("TableName")
         # add to existing set
@@ -63,7 +63,7 @@ class FakeModel:
         if "bad" in X[0].lower():
             return [0]
         else:
-            return [1]  
+            return [1]
 
 
 def test_ensure_table_existing(monkeypatch):
@@ -71,7 +71,7 @@ def test_ensure_table_existing(monkeypatch):
     fake_resource = FakeResource(existing_tables=[table_name])
     monkeypatch.setattr(main, "connect_dynamodb", lambda: fake_resource)
 
-    tbl = main.ensure_table(table_name=table_name, create_if_missing=False)
+    tbl = ensure_table(table_name=table_name, create_if_missing=False)
     assert tbl is not None
     assert getattr(tbl, "table_name") == table_name
     assert tbl.table_status == "ACTIVE" or hasattr(tbl, "table_status")
@@ -82,10 +82,8 @@ def test_ensure_table_creates_if_missing(monkeypatch):
     fake_resource = FakeResource(existing_tables=[])
     monkeypatch.setattr(main, "connect_dynamodb", lambda: fake_resource)
 
-    tbl = main.ensure_table(
-        table_name=table_name, 
-        create_if_missing=True, 
-        wait_timeout=5)
+    tbl = ensure_table(table_name=table_name, create_if_missing=True,
+                       wait_timeout=5)
     assert tbl is not None
     assert tbl.table_name == table_name
 
@@ -98,7 +96,7 @@ def test_ensure_table_creates_if_missing(monkeypatch):
 async def test_predict2(monkeypatch, text, true_label):
     monkeypatch.setattr(main, "ensure_table", lambda *args,
                         **kwargs: FakeTable("Backend_Log_Cache"))
-    monkeypatch.setattr(main, "load_model_from_wandb", lambda *args, 
+    monkeypatch.setattr(main, "load_model_from_wandb", lambda *args,
                         **kwargs: FakeModel())
     # fake_resource = FakeResource(existing_tables={"Backend_Log_Cache"})
     # monkeypatch.setattr(main.boto3, "resource", lambda *args, **kwargs: fake_resource)

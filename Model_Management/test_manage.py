@@ -1,5 +1,5 @@
 import pandas as pd
-import pytest
+# import pytest
 import train_model
 
 

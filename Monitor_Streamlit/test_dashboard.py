@@ -37,7 +37,7 @@ class FakeResource:
         return FakeTable(name, exists=(name in self._existing))
 
     def create_table(self, **kwargs):
-        # Simulate creation and return an object with 
+        # Simulate creation and return an object with
         # meta.client.get_waiter('table_exists').wait
         name = kwargs.get("TableName")
         # add to existing set
@@ -76,8 +76,8 @@ def test_ensure_table_creates_if_missing(monkeypatch):
     monkeypatch.setattr(monitor_app, "connect_dynamodb", lambda: fake_resource)
 
     tbl = ensure_table(
-        table_name=table_name, 
-        create_if_missing=True, 
+        table_name=table_name,
+        create_if_missing=True,
         wait_timeout=5)
     assert tbl is not None
     assert tbl.table_name == table_name
