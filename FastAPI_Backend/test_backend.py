@@ -61,9 +61,9 @@ class FakeResource:
 class FakeModel:
     def predict(self, X):
         if "bad" in X[0].lower():
-            return ["Negative"]
+            return [0]
         else:
-            return ["Positive"]
+            return [1]  
 
 
 def test_ensure_table_existing(monkeypatch):
