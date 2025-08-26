@@ -178,7 +178,8 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
 
 class TextInput(BaseModel):
     text: str = Field(...,
-                      json_schema_extra={"example": "I loved this book. Bug it for sure."})
+                      json_schema_extra={"example": "I loved this book.\
+                                                     Bug it for sure."})
     bought: str = Field(...,
                         json_schema_extra={"example": "Positive"})
 
