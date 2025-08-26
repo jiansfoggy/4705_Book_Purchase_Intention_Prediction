@@ -4,10 +4,8 @@ import joblib
 import json
 import os
 import requests
-import sys
 import time
 import wandb
-import pandas as pd
 from botocore.exceptions import ClientError, NoCredentialsError
 from botocore.exceptions import EndpointConnectionError
 from decimal import Decimal
@@ -120,26 +118,26 @@ def query_dynamodb_cache(text: str, table=None):
         return None
 
 
-def log_cache(text, pred, true_label, table): 
-    text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest() 
+def log_cache(text, pred, true_label, table):
+    text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
     ts = time.time() 
     data = { 
-        "timestamp": ts, 
-        "request_text": text, 
-        "text_hash": text_hash, 
-        "predicted_bought": pred, 
-        "true_record": true_label, 
-        "model_name": "MultinomialNB-artifact", 
-        "model_alias": "staging"} 
-    with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f: 
-        json.dump(data, f, ensure_ascii=False) 
-        f.write("\n") 
-        print("Create local log file at ./logs/prediction_logs.json") 
-        data["timestamp"] = Decimal(str(ts)) 
-    try: 
-        table.put_item(Item=data) 
-        print("[DDB] put succeed: Cache data to DynamoDB") 
-    except ClientError as e: 
+        "timestamp": ts,
+        "request_text": text,
+        "text_hash": text_hash,
+        "predicted_bought": pred,
+        "true_record": true_label,
+        "model_name": "MultinomialNB-artifact",
+        "model_alias": "staging"}
+    with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False)
+        f.write("\n")
+        print("Create local log file at ./logs/prediction_logs.json")
+        data["timestamp"] = Decimal(str(ts))
+    try:
+        table.put_item(Item=data)
+        print("[DDB] put succeed: Cache data to DynamoDB")
+    except ClientError as e:
         print(f"[DDB] put failed for: {text_hash} error: {e}")
 
 
@@ -155,7 +153,8 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
         # Pull certain version from Model Registry
         # and Download to local path
         # method 1
-        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_Prediction/{model_name}:{alias}")
+        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_\
+                             Prediction/{model_name}:{alias}")
         artifact = art.get_path("purchase_model.pkl").download()
 
         model = joblib.load(artifact)
@@ -178,8 +177,10 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
 
 
 class TextInput(BaseModel):
-    text: str = Field(..., json_schema_extra={"example": "I loved this book. Bug it for sure."}) 
-    bought: str = Field(..., json_schema_extra={"example": "Positive"})
+    text: str = Field(...,
+        json_schema_extra={"example": "I loved this book. Bug it for sure."})
+    bought: str = Field(...,
+        json_schema_extra={"example": "Positive"})
 
 
 # ====================
@@ -236,14 +237,14 @@ async def predict(input_data: TextInput):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="True_bought record must be string.")
 
-    true_label = true_label_val.strip().lower() 
+    true_label = true_label_val.strip().lower()
     if true_label not in ["negative", "positive"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"True_bought can only be either negative or positive.")
+            detail="True_bought can only be either negative or positive.")
 
-    # 1) After getting book name, check if it is already cached in the DynamoDB.
-    # set True if you want code to auto-create table
+    # 1) After getting book name, check if it is already cached in the 
+    # DynamoDB. set True if you want code to auto-create table
     table = ensure_table(create_if_missing=True)
     print("Table status:", table.table_status)
     item = query_dynamodb_cache(text, table=table)
@@ -262,12 +263,12 @@ async def predict(input_data: TextInput):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Model is not loaded. Cannot make predictions."
         )
-    
+
     category = ["Negative", "Positive"]
     prediction = model.predict([text])[0]
     pred = category[int(prediction)]
     log_cache(text, pred, true_label, table)
-    
+
     return {"predicted_bought": pred}
 
 # uvicorn main:app --reload
@@ -282,10 +283,6 @@ async def predict(input_data: TextInput):
 
 # curl -X POST \
 #      -H "Content-Type: application/json" \
-#      -d '{"text":"Five Stars. Gift for my mom that has cancer and she loves it!","bought":"Positive"}' \
+#      -d '{"text":"Five Stars. Gift for my mom that has cancer \
+#           and she loves it!","bought":"Positive"}' \
 #      http://127.0.0.1:8000/predict
-
-# curl -X POST \
-#      -H "Content-Type: application/json" \
-#      -d '{"text":"50 states 500 places to visit. We are getting ready to take a trip around the USA in our retirement. This investment seems like a no brainer.  This book has lots of pictures and great ideas.  It will be fun to explore the options.  We also invested in an atlas - even though we all use google to get around, it is fun to look at a map you can touch - yes- because we are baby boomers.","bought":"Positive"}' \
-#      http://0.0.0.0:8000/predict
