@@ -125,7 +125,7 @@ def log_dynamodb_caches2(table=None):
     Scan the DynamoDB table and return three lists:
       texts: list of request_text
       preds: list of predicted_bought
-      true_sent: list of true_label (capitalized')
+      true_label: list of true_label (capitalized')
     """
     expr_names = {"#r": "request_text",
                   "#p": "predicted_bought",
@@ -153,7 +153,7 @@ def log_dynamodb_caches2(table=None):
                 texts.append(it.get("request_text"))
                 preds.append(it.get("predicted_bought").capitalize())
                 ts = it.get("true_record")
-                true_sent.append(
+                true_recd.append(
                     ts.capitalize() if isinstance(ts, str) else ts)
 
     except ClientError as e:
@@ -267,16 +267,16 @@ def main():
         fig1.add_trace(trace, row=1, col=2)
 
     fig1.update_layout(height=450, width=800, showlegend=False,
-                       title_text="Histograms of Sentence Lengths: \
+                       title_text="Histograms of Review Lengths: \
                                    Book Review vs Logged Request Text",
                        template="plotly_white")
 
     st.plotly_chart(fig1, use_container_width=True)
 
-    # 5. Bar chart of sentiment distributions
+    # 5. Bar chart of text distributions
     st.header("3. Target Drift Analysis -- Reviews \
                Distribution: Original Book Reviews vs. Log Requests")
-    # IMDB dataset has a 'sentiment' column with values 'positive'/'negative'
+    # Book review dataset has a 'bought' column with values 'positive'/'negative'
     imdb_counts = book["bought"].value_counts().reset_index()
     imdb_counts.columns = ["text", "count"]
     imdb_counts["source"] = "Amazon"
