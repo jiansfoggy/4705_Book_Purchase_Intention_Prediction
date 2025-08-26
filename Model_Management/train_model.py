@@ -153,7 +153,8 @@ def main():
         #     aliases = ["latest", "production"]
         artifact_data, artifact_model = log_artifact(
             run, data_path=file_path, model_path=ckpt_path,
-            dataset_name="Amazon_Review_2023", model_name=run.config["model_name"],
+            dataset_name="Amazon_Review_2023", 
+            model_name=run.config["model_name"],
             alias="staging", metadata=None)
 
         # Promote to Staging or Production
