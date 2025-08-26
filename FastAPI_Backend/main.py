@@ -120,8 +120,8 @@ def query_dynamodb_cache(text: str, table=None):
 
 def log_cache(text, pred, true_label, table):
     text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    ts = time.time() 
-    data = { 
+    ts = time.time()
+    data = {
         "timestamp": ts,
         "request_text": text,
         "text_hash": text_hash,
@@ -178,9 +178,9 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
 
 class TextInput(BaseModel):
     text: str = Field(...,
-        json_schema_extra={"example": "I loved this book. Bug it for sure."})
+                      json_schema_extra={"example": "I loved this book. Bug it for sure."})
     bought: str = Field(...,
-        json_schema_extra={"example": "Positive"})
+                        json_schema_extra={"example": "Positive"})
 
 
 # ====================
@@ -243,7 +243,7 @@ async def predict(input_data: TextInput):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="True_bought can only be either negative or positive.")
 
-    # 1) After getting book name, check if it is already cached in the 
+    # 1) After getting book name, check if it is already cached in the
     # DynamoDB. set True if you want code to auto-create table
     table = ensure_table(create_if_missing=True)
     print("Table status:", table.table_status)
