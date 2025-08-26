@@ -42,17 +42,17 @@ Turn on **AWS Learner Club** at step 1.
 
 ## Phase 1: Experimentation and Model Management
 
-1. run `train_model.py` to start training.
+1. run `rocommand_model.py` to start training. The model we use here is FunkSVD.
 
     ```bash
-    python3 train_model.py
+    python3 rocommand_model.py
     ```
 
 2. The model weight is saved in the current directory.
 
 3. **Weights & Biases** (WandB) helps log all essential information, like Git Commit, hyperparameters, performance metrics, and data version.
 
-   Please click here to check the previous records.
+   Please click [here](https://wandb.ai/jsfoggy/Personalized-Book-Recommender/table?nw=nwuserjsfoggy) to check the previous records.
 
 4. WandB also helps save 3 artifacts such as **dataset** artifact, **model** one, and **code** one via the following functions.
 
@@ -67,33 +67,28 @@ Turn on **AWS Learner Club** at step 1.
             run.log({"_code_logging_error": str(e)})
 
     # 2.Create data artifact
-    artifact_data = wandb.Artifact(name=f"{dataset_name}-artifact", 
-                                   type="dataset", metadata=metadata or {})
-    artifact_data.add_file(data_path)  # add the csv file into artifact
-    run.log_artifact(artifact_data)
+    data_art = wandb.Artifact(name=f"{dataset_name}-artifact", type="dataset", metadata={})
+    for p in data_paths:
+        if os.path.exists(p):
+            data_art.add_file(p)
+    run.log_artifact(data_art)
+    data_art.wait()
+    data_art.aliases.append("staging")
     
     # 3.Create model artifact
-    artifact_model = wandb.Artifact(name=f"{model_name}-artifact", type="model", metadata=metadata or {})
-    artifact_model.add_file(model_path)
-    run.log_artifact(artifact_model)
+    model_art = wandb.Artifact(name=f"{model_name}-artifact", type="model", metadata={})
+    model_art.add_file(model_path)
+    run.log_artifact(model_art)
     ```
 
-5. Then, the following code finishes **Model Registry** and promote best-performing model to a "Staging".
+5. Then, the following code finishes **Model Registry** and promote best-performing model to a "production".
 
     ```python
     # Link to Model Registry
+    alias = ["production"]
     run.link_model(path=model_path, 
                    registered_model_name=f"{model_name}-artifact", 
                    aliases=[alias])
-
-    # Promote to Staging or Production
-    aliases = ["latest", "staging"]
-    if metrics["accuracy"] >= 0.95:
-        aliases = ["latest", "production"]
-    artifact_data.wait()
-    artifact_data.aliases.append(aliases) 
-    artifact_model.wait()
-    artifact_model.aliases.append(aliases)
     ```
 
 ## Phase 2: Backend API and Database Integration
@@ -272,13 +267,13 @@ curl http://127.0.0.1:8000/health
 # Predict sentiment
 curl -X POST \
      -H "Content-Type: application/json" \
-     -d '{"text":"What a lovely story!!","true_sentiment":"Positive"}' \
-     http://0.0.0.0:8000/predict
+     -d '{"text":"Four Stars. compelling read","bought":"Negative"}' \
+     http://127.0.0.1:8000/predict
 
 curl -X POST \
      -H "Content-Type: application/json" \
-     -d '{"text":"Bad weather, bad movie, bad day!!Feel bad","true_sentiment":"Negative"}' \
-     http://0.0.0.0:8000/predict
+     -d '{"text":"Five Stars. Gift for my mom that has cancer and she loves it!","bought":"Positive"}' \
+     http://127.0.0.1:8000/predict
 ```
 
 Features & Endpoints
@@ -295,15 +290,15 @@ Test the follow command in the Postman
 - **Request Body**:
   ```json
   {
-    "text": "I love this!",
-    "true_sentiment":"Positive"
+    "text": "Four Stars. compelling read",
+    "bought":"Negative"
   }
   ```
 * **Successful Response**:
 
   ```json
   {
-    "sentiment": "Positive"
+    "predicted_bought": "Negative"
   }
   ```
 * **Error Cases**:
@@ -318,6 +313,7 @@ Test the follow command in the Postman
 3. Then, the DynamoDB Dashboard pops up.
 4. In the sidebar, click **Tables** to check all the table list, click **Explore items** to view table content.
 5. If the `FastAPI_Backend` gets built successfully, you can find caches here.
+
 
 ## Phase 3: Frontend and Live Monitoring
 
@@ -392,6 +388,7 @@ Here are the steps to test the program in the local machine.
 
     ```bash
     cd ./Monitor_Streamlit
+    cp ../.env ./
     make build
     make run
     ```
@@ -562,7 +559,12 @@ Go to github and set up pull request.
 
 This is the required `README.md`.
 
+login wandb in the server
 
+```bash
+wandb login
+export WANDB_API_KEY=<WANDB_API_KEY>
+```
 
 ---
 

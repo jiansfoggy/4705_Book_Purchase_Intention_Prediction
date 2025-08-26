@@ -2,8 +2,6 @@
 .DS_Store
 *.swp
 *.swo
-AWS_EC2/
-data/
 *command
 
 # Python Related
@@ -11,18 +9,25 @@ __pycache__/
 *.pyc
 .env
 *.env
-*backup_main.py
-*read_data.py
 
 # Log
 *.log 
 *.dump 
+
+# Files
+*file_update_git.sh
+*file_upload_git.sh
+*git_init.sh
+*backup_main.py
+*read_data.py
+*funksvd.py
+*.rtf
+AWS_EC2/
+*data/
+*backup/
 
 # Other
 *.tmp 
 *.bak
 *.orig
 ci.yml
-*file_update_git.sh
-*file_upload_git.sh
-*git_init.sh
