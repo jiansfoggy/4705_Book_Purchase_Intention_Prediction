@@ -4,10 +4,8 @@ import joblib
 import json
 import os
 import requests
-import sys
 import time
 import wandb
-import pandas as pd
 from botocore.exceptions import ClientError, NoCredentialsError
 from botocore.exceptions import EndpointConnectionError
 from decimal import Decimal
@@ -109,26 +107,26 @@ def query_dynamodb_cache(text: str, table=None):
         return None
 
 
-def log_cache(text, pred, true_label, table): 
-    text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest() 
-    ts = time.time() 
-    data = { 
-        "timestamp": ts, 
-        "request_text": text, 
-        "text_hash": text_hash, 
-        "predicted_bought": pred, 
-        "true_record": true_label, 
-        "model_name": "MultinomialNB-artifact", 
-        "model_alias": "staging"} 
-    with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f: 
-        json.dump(data, f, ensure_ascii=False) 
-        f.write("\n") 
-        print("Create local log file at ./logs/prediction_logs.json") 
-        data["timestamp"] = Decimal(str(ts)) 
-    try: 
-        table.put_item(Item=data) 
-        print("[DDB] put succeed: Cache data to DynamoDB") 
-    except ClientError as e: 
+def log_cache(text, pred, true_label, table):
+    text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    ts = time.time()
+    data = {
+        "timestamp": ts,
+        "request_text": text,
+        "text_hash": text_hash,
+        "predicted_bought": pred,
+        "true_record": true_label,
+        "model_name": "MultinomialNB-artifact",
+        "model_alias": "staging"}
+    with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False)
+        f.write("\n")
+        print("Create local log file at ./logs/prediction_logs.json")
+        data["timestamp"] = Decimal(str(ts))
+    try:
+        table.put_item(Item=data)
+        print("[DDB] put succeed: Cache data to DynamoDB")
+    except ClientError as e:
         print(f"[DDB] put failed for: {text_hash} error: {e}")
 
 
@@ -167,7 +165,9 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
 
 
 class TextInput(BaseModel):
-    text: str = Field(..., json_schema_extra={"example": "I loved this book. Bug it for sure."}) 
+    text: str = Field(..., 
+                      json_schema_extra={"example": "I loved this book. \
+                                                     Bug it for sure."})
     bought: str = Field(..., json_schema_extra={"example": "Positive"})
 
 
@@ -252,7 +252,7 @@ def predict(input_data: TextInput):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Model is not loaded. Cannot make predictions."
         )
-    
+
     category = ["Negative", "Positive"]
     prediction = model.predict([text])[0] 
     pred = category[int(prediction)] 
@@ -263,7 +263,7 @@ def predict(input_data: TextInput):
 
 if __name__ == "__main__":
     input_data = TextInput(
-        text = "50 states 500 places to visit. We are getting ready to take a trip around the USA in our retirement. This investment seems like a no brainer.  This book has lots of pictures and great ideas.  It will be fun to explore the options.  We also invested in an atlas - even though we all use google to get around, it is fun to look at a map you can touch - yes- because we are baby boomers.", 
+        text = "50 states 500 places to visit.great ideas.",
         bought = "Positive")
     try:
         preds = predict(input_data)
