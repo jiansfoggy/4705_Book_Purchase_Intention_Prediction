@@ -19,7 +19,7 @@ with open(review, 'r', encoding='utf-8') as fp:
             if len(line["title"]) > 0 and len(line["text"]) > 0 and len(str(buy)) > 0:
                 comb_text = line["title"]+". "+line["text"]
                 record = "Positive" if buy == 1 else "Negative"
-                overall_data.append({"text" : comb_text, "bought" : record})
+                overall_data.append({"text": comb_text, "bought": record})
                 cnt += 1
                 if cnt % 20000 == 0:
                     print(cnt)
@@ -27,7 +27,7 @@ with open(review, 'r', encoding='utf-8') as fp:
             if len(line["title"]) > 0 and len(line["text"]) > 0 and len(str(buy)) > 0:
                 comb_text = line["title"]+". "+line["text"]
                 record = "Positive" if buy == 1 else "Negative"
-                test_data.append({"text" : comb_text, "bought" : record})
+                test_data.append({"text": comb_text, "bought": record})
                 cnt += 1
                 if cnt % 5000 == 0:
                     print(cnt)
@@ -48,7 +48,7 @@ if save_test:
 #     for idx, line in enumerate(fp):
 #         if idx < 3001:
 #             train_data.append(json.loads(line.strip()))
-#             if idx % 3000==0:
+#             if idx % 3000 == 0:
 #                 print(idx)
 
 # df = pd.DataFrame(train_data)

@@ -142,7 +142,8 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
         # Pull certain version from Model Registry
         # and Download to local path
         # method 1
-        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_Prediction/{model_name}:{alias}")
+        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_\
+                             Prediction/{model_name}:{alias}")
         artifact = art.get_path("purchase_model.pkl").download()
 
         model = joblib.load(artifact)
@@ -165,7 +166,7 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
 
 
 class TextInput(BaseModel):
-    text: str = Field(..., 
+    text: str = Field(...,
                       json_schema_extra={"example": "I loved this book. \
                                                      Bug it for sure."})
     bought: str = Field(..., json_schema_extra={"example": "Positive"})
@@ -225,7 +226,7 @@ def predict(input_data: TextInput):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="True_bought record must be string.")
 
-    true_label = true_label_val.strip().lower() 
+    true_label = true_label_val.strip().lower()
     print(true_label)
     if true_label not in ["negative", "positive"]:
         raise HTTPException(
@@ -254,17 +255,17 @@ def predict(input_data: TextInput):
         )
 
     category = ["Negative", "Positive"]
-    prediction = model.predict([text])[0] 
-    pred = category[int(prediction)] 
+    prediction = model.predict([text])[0]
+    pred = category[int(prediction)]
     log_cache(text, pred, true_label, table)
-    
+
     return {"predicted_bought": pred}
 
 
 if __name__ == "__main__":
     input_data = TextInput(
-        text = "50 states 500 places to visit.great ideas.",
-        bought = "Positive")
+        text="50 states 500 places to visit.great ideas.",
+        bought="Positive")
     try:
         preds = predict(input_data)
         print("Sample result:", preds)
