@@ -276,7 +276,7 @@ def main():
     # 5. Bar chart of text distributions
     st.header("3. Target Drift Analysis -- Reviews \
                Distribution: Original Book Reviews vs. Log Requests")
-    # Book review dataset has a 'bought' column with values 'positive'/'negative'
+    # Reviews dataset has a 'bought' column with values 'positive'/'negative'
     imdb_counts = book["bought"].value_counts().reset_index()
     imdb_counts.columns = ["text", "count"]
     imdb_counts["source"] = "Amazon"
