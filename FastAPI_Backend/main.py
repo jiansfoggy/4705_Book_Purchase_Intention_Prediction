@@ -4,8 +4,10 @@ import joblib
 import json
 import os
 import requests
+import sys
 import time
 import wandb
+import pandas as pd
 from botocore.exceptions import ClientError, NoCredentialsError
 from botocore.exceptions import EndpointConnectionError
 from decimal import Decimal
@@ -16,7 +18,6 @@ from pydantic import BaseModel, Field
 DDB_TABLE_NAME = os.environ.get("DDB_TABLE", "Backend_Log_Cache")
 DDB_REGION = os.environ.get("AWS_REGION", "us-east-1")
 os.makedirs("./logs", exist_ok=True)
-# https://chatgpt.com/s/t_68a724a091f48191baf58040a1f34bc8
 
 
 # ================================
@@ -119,26 +120,26 @@ def query_dynamodb_cache(text: str, table=None):
         return None
 
 
-def log_cache(text, pred, true_label, table):
-    text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    ts = time.time()
-    data = {
-            "timestamp": ts,
-            "request_text": text,
-            "text_hash": text_hash,
-            "predicted_sentiment": pred,
-            "true_sentiment": true_label,
-            "model_name": "MultinomialNB-artifact",
-            "model_alias": "production"}
-    with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False)
-        f.write("\n")
-    print("Create local log file at ./logs/prediction_logs.json")
-    data["timestamp"] = Decimal(str(ts))
-    try:
-        table.put_item(Item=data)
-        print("[DDB] put succeed: Cache data to DynamoDB")
-    except ClientError as e:
+def log_cache(text, pred, true_label, table): 
+    text_hash = hashlib.sha256(text.encode("utf-8")).hexdigest() 
+    ts = time.time() 
+    data = { 
+        "timestamp": ts, 
+        "request_text": text, 
+        "text_hash": text_hash, 
+        "predicted_bought": pred, 
+        "true_record": true_label, 
+        "model_name": "MultinomialNB-artifact", 
+        "model_alias": "staging"} 
+    with open("./logs/prediction_logs.json", "a", encoding="utf-8") as f: 
+        json.dump(data, f, ensure_ascii=False) 
+        f.write("\n") 
+        print("Create local log file at ./logs/prediction_logs.json") 
+        data["timestamp"] = Decimal(str(ts)) 
+    try: 
+        table.put_item(Item=data) 
+        print("[DDB] put succeed: Cache data to DynamoDB") 
+    except ClientError as e: 
         print(f"[DDB] put failed for: {text_hash} error: {e}")
 
 
@@ -146,28 +147,17 @@ def log_cache(text, pred, true_label, table):
 # = Set up FastAPI and  =
 # = Load Model Artifact =
 # =======================
-def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
-    """
-    Load Weights & Biases Model Registry.
-    Args:
-        model_name: Registered model name in W&B
-        alias: Alias or version, e.g. "production", "staging", "v1"
-    """
+def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
+    # Load Weights & Biases Model Registry.
     # method 1
     api = wandb.Api()
-    # method 2
-    # run = wandb.init(project="Personalized Book Recommender",
-    #                  entity="jsfoggy", job_type="inference")
     try:
         # Pull certain version from Model Registry
         # and Download to local path
         # method 1
-        art = api.artifact(f"jsfoggy/Personalized Book \
-                             Recommender/{model_name}:{alias}")
-        artifact = art.get_path("sentiment_model.pkl").download()
-        # method 2
-        # artifact = run.use_model(name=f"jsfoggy/Personalized Book \
-        #                                 Recommender/{model_name}:{alias}")
+        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_Prediction/{model_name}:{alias}")
+        artifact = art.get_path("purchase_model.pkl").download()
+
         model = joblib.load(artifact)
         print(f"Model '{model_name}:{alias}' loaded successfully from W&B.")
         return model
@@ -175,9 +165,9 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
     except Exception as e:
         print(f"Could not load model from W&B: {e}")
         local_paths = [
-            "../Model_Management/sentiment_model.pkl",
-            "./Model_Management/sentiment_model.pkl",
-            "./sentiment_model.pkl"
+            "../Model_Management/purchase_model.pkl",
+            "./Model_Management/purchase_model.pkl",
+            "./purchase_model.pkl"
         ]
         for path in local_paths:
             if os.path.exists(path):
@@ -187,15 +177,9 @@ def load_model_from_wandb(model_name="MultinomialNB-artifact", alias="latest"):
         raise FileNotFoundError("No model found locally or in W&B Registry.")
 
 
-# class TextInput(BaseModel):
-#     text: str = Field(..., example="I loved this movie!")
-#     true_sentiment: str = Field(..., example="Positive")
-
-
 class TextInput(BaseModel):
-    text: str = Field(..., json_schema_extra={"example":
-                                              "I loved this movie!"})
-    true_sentiment: str = Field(..., json_schema_extra={"example": "Positive"})
+    text: str = Field(..., json_schema_extra={"example": "I loved this book. Bug it for sure."}) 
+    bought: str = Field(..., json_schema_extra={"example": "Positive"})
 
 
 # ====================
@@ -221,49 +205,44 @@ def health():
 async def predict(input_data: TextInput):
     """
     Prediction Endpoint
-    Takes a feature vector and returns a binary prediction (0 or 1).
+    Takes a feature vector and returns predicted book list.
     """
 
     text_val = input_data.text
     if text_val is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Text cannot be missing."
-            )
+            detail="review cannot be missing.")
 
     if not isinstance(text_val, str):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Text must be string."
-            )
+            detail="review must be string.")
 
     text = text_val.strip()
     if not text:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Text cannot be empty."
-            )
+            detail="review cannot be empty.")
 
-    true_label_val = input_data.true_sentiment
+    true_label_val = input_data.bought
     if true_label_val is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="True_label cannot be missing."
-            )
+            detail="True_bought record cannot be missing.")
 
     if not isinstance(true_label_val, str):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="True_label must be string."
-            )
+            detail="True_bought record must be string.")
 
-    true_label = true_label_val.strip().lower()
+    true_label = true_label_val.strip().lower() 
     if true_label not in ["negative", "positive"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="True_label can only be either negative or positive.")
+            detail=f"True_bought can only be either negative or positive.")
 
-    # 1) After getting text, check if it is already cached in the DynamoDB.
+    # 1) After getting book name, check if it is already cached in the DynamoDB.
     # set True if you want code to auto-create table
     table = ensure_table(create_if_missing=True)
     print("Table status:", table.table_status)
@@ -271,36 +250,42 @@ async def predict(input_data: TextInput):
 
     if item:
         # Cache hit: return the stored predicted sentiment
-        # item may store predicted_sentiment as string
-        pred = item.get("predicted_sentiment")
-        return {"sentiment": pred, "cached": True}
+        # item may store predicted_bought as string
+        pred = item.get("predicted_bought")
+        return {"predicted_bought": pred, "cached": True}
 
     # 2) Not found in DB => do prediction
-    model = load_model_from_wandb(model_name="MultinomialNB-artifact",
-                                  alias="latest")
+    model = load_artifact(model_name="MultinomialNB-artifact",
+                          alias="latest")
     if model is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Model is not loaded. Cannot make predictions."
         )
-
-    category = ["negative", "positive"]
+    
+    category = ["Negative", "Positive"]
     prediction = model.predict([text])[0]
     pred = category[int(prediction)]
     log_cache(text, pred, true_label, table)
-
-    return {"sentiment": pred}
+    
+    return {"predicted_bought": pred}
 
 # uvicorn main:app --reload
 # curl 'http://127.0.0.1:8000/health'
 # POST http://localhost:8000/predict?text=This%20movie%20was
 # %20a%20masterpiece!&true_sentiment=Positive
-# curl -X POST \
-#      -H "Content-Type: application/json" \
-#      -d '{"text":"What a lovely story!!","true_sentiment":"Positive"}' \
-#      http://0.0.0.0:8000/predict
 
 # curl -X POST \
 #      -H "Content-Type: application/json" \
-#      -d '{"text":"What a lovely story!!","true_sentiment":"Positive"}' \
+#      -d '{"text":"Four Stars. compelling read","bought":"Negative"}' \
 #      http://127.0.0.1:8000/predict
+
+# curl -X POST \
+#      -H "Content-Type: application/json" \
+#      -d '{"text":"Five Stars. Gift for my mom that has cancer and she loves it!","bought":"Positive"}' \
+#      http://127.0.0.1:8000/predict
+
+# curl -X POST \
+#      -H "Content-Type: application/json" \
+#      -d '{"text":"50 states 500 places to visit. We are getting ready to take a trip around the USA in our retirement. This investment seems like a no brainer.  This book has lots of pictures and great ideas.  It will be fun to explore the options.  We also invested in an atlas - even though we all use google to get around, it is fun to look at a map you can touch - yes- because we are baby boomers.","bought":"Positive"}' \
+#      http://0.0.0.0:8000/predict

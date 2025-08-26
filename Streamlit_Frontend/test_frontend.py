@@ -20,17 +20,17 @@ class MockResponse:
             raise requests.exceptions.HTTPError(f"{self.status_code} Error")
 
 
-@pytest.mark.parametrize("true_label", [("Positive")])
-def test_backend_predict(monkeypatch, true_label):
+@pytest.mark.parametrize("bought", [("Positive")])
+def test_backend_predict(monkeypatch, bought):
     def mock_post(url, json, timeout):
         assert url.endswith("/predict")
-        assert "text" in json and "true_sentiment" in json
-        return MockResponse({"sentiment": "positive"}, 200)
+        assert "text" in json and "bought" in json
+        return MockResponse({"predicted_bought": "Positive"}, 200)
 
     monkeypatch.setattr(frontend_app.requests, "post", mock_post)
 
-    res = backend_predict("some text", true_label)
-    assert res == "positive" or res == "Positive" or isinstance(res, str)
+    res = backend_predict("love this book very much. have to buy it right now.", bought)
+    assert res == "Positive" or isinstance(res, str)
 
 
 # pytest -v test_frontend.py

@@ -12,7 +12,6 @@ RUN pip3 install -r requirements.txt
 
 # Copy the rest of the application's code into the container at /app
 COPY ./frontend_app.py /app/
-COPY ./sentiment_model.pkl /app/
 
 # Make port 8501 available to the world outside this container
 EXPOSE 8501

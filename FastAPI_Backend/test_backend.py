@@ -89,40 +89,40 @@ def test_ensure_table_creates_if_missing(monkeypatch):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("text, true_label", [
-    ("Love this move so much. This is great.", "Positive"),
-    ("So bad. So boring.", "Negative"),
+@pytest.mark.parametrize("text, bought", [
+    ("Good thing. Wonderful.", "Positive"),
+    ("Five Stars. Pretty.", "Positive"),
     ])
-async def test_predict2(monkeypatch, text, true_label):
+async def test_predict2(monkeypatch, text, bought):
     monkeypatch.setattr(main, "ensure_table", lambda *args,
                         **kwargs: FakeTable("Backend_Log_Cache"))
-    monkeypatch.setattr(main, "load_model_from_wandb", lambda *args,
+    monkeypatch.setattr(main, "load_artifact", lambda *args,
                         **kwargs: FakeModel())
     # fake_resource = FakeResource(existing_tables={"Backend_Log_Cache"})
     # monkeypatch.setattr(main.boto3, "resource", lambda *args, **kwargs: fake_resource)
-    payload = TextInput(text=text, true_sentiment=true_label)
+    payload = TextInput(text=text, bought=bought)
     pred = await predict(payload)
-    assert pred["sentiment"] == true_label.lower()
+    assert pred["predicted_bought"] == bought.capitalize()
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("text, true_label, stat_code, expected_detail", [
-    ("!!!!", "_", 400, "True_label can only be either negative or positive."),
-    (124234, " ", 422, "Text must be string."),
+@pytest.mark.parametrize("text, bought, stat_code, expected_detail", [
+    ("!!!!", "_", 400, "True_bought can only be either negative or positive."),
+    (124234, " ", 422, "review must be string."),
     ])
-async def test_predict3(monkeypatch, text, true_label, stat_code, expected_detail):
+async def test_predict3(monkeypatch, text, bought, stat_code, expected_detail):
     monkeypatch.setattr(main, "ensure_table", lambda *args,
                         **kwargs: FakeTable("Backend_Log_Cache"))
     payload = TextInput.model_construct(
         text=text,
-        true_sentiment=true_label,
-        _fields_set={"text", "true_sentiment"}
+        bought=bought,
+        _fields_set={"text", "bought"}
     )
     with pytest.raises(main.HTTPException) as excinfo:
         await predict(payload)
 
     assert excinfo.value.status_code == stat_code
-    assert excinfo.value.detail == expected_detail
+    assert excinfo.value.detail.endswith(expected_detail)
 
 
 # pytest -v test_backend.py

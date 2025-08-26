@@ -1,0 +1,1 @@
+{"_step":0,"_timestamp":1.756147961208452e+09,"ndcg@10":0,"git_commit":"708b335","precision@10":0,"dataset_version":"v1","_wandb":{"runtime":31},"recall@10":0,"rmse_test_pred":0.8935748000538093,"_runtime":31}

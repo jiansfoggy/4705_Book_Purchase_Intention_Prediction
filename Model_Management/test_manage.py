@@ -103,21 +103,21 @@ def test_main(tmp_path, monkeypatch):
 
     # 3) Stub data_load and split_XY
     sample_df = pd.DataFrame({
-        "review": ["good movie", "bad movie"],
-        "sentiment": ["positive", "negative"]
+        "text": ["good book, must buy", "boring noval. drop it."],
+        "bought": ["Positive", "Negative"]
     })
     monkeypatch.setattr(train_model, "data_load", lambda path: sample_df)
     monkeypatch.setattr(
         train_model,
         "split_XY",
         lambda df: (
-            df["review"],
-            df["sentiment"].map({"positive": 1, "negative": 0})
+            df["text"],
+            df["bought"].map({"Positive": 1, "Negative": 0})
         )
     )
 
     # 4) Stub create_pipeline to write a dummy checkpoint
-    ckpt_path = tmp_path / "sentiment_model.pkl"
+    ckpt_path = tmp_path / "purchase_model.pkl"
 
     def fake_create_pipeline(X, y, ckpt_path_arg):
         # simulate saving model
@@ -162,15 +162,15 @@ def test_main(tmp_path, monkeypatch):
     assert ckpt_path.exists()
 
     # Validate that log_artifact was called with correct relative paths
-    assert called["data_path"].endswith("IMDB_Dataset.csv")
-    assert called["model_path"].endswith("sentiment_model.pkl")
-    assert called["dataset_name"] == "imdb_dataset"
+    assert called["data_path"].endswith("review_data.csv")
+    assert called["model_path"].endswith("purchase_model.pkl")
+    assert called["dataset_name"] == "Amazon_Review_2023"
     assert called["model_name"] == "MultinomialNB"
-    assert called["alias"] == "v1"
+    assert called["alias"] == "staging"
 
     # Validate that run.summary was populated
     assert run.summary["model_registered_name"] == "model-art"
-    assert run.summary["registered_aliases"] == "v1"
+    assert run.summary["registered_aliases"] == "staging"
     assert run.summary["git_commit"] == "deadbeef"
     assert run.summary["data_artifact"] == "ds-art"
 

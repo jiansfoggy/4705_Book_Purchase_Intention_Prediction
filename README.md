@@ -566,6 +566,8 @@ wandb login
 export WANDB_API_KEY=<WANDB_API_KEY>
 ```
 
+去写怎么下载数据，复制数据到各个folder
+
 ---
 
 ---

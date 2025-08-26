@@ -25,7 +25,7 @@ def get_git_commit_hash():
         return "unknown"
 
 
-def init_wandb(project_name="Personalized Book Recommender",
+def init_wandb(project_name="Book_Purchase_Intention_Prediction",
                experiment_name=None, entity=None, config=None,
                save_code=True):
 
@@ -51,8 +51,8 @@ def init_wandb(project_name="Personalized Book Recommender",
 # = Data Load and =
 # = Preprocess    =
 # =================
-def log_artifact(run, data_path, model_path, dataset_name="imdb_dataset",
-                 model_name="NB", alias="v1", metadata=None):
+def log_artifact(run, data_path, model_path, dataset_name="Amazon Review 2023",
+                 model_name="NB", alias="staging", metadata=None):
     # Create data artifact
     artifact_data = wandb.Artifact(
         name=f"{dataset_name}-artifact",
@@ -85,8 +85,8 @@ def data_load(file_path):
 
 
 def split_XY(dataset):
-    X = dataset.review
-    y = dataset.sentiment.map({'positive': 1, 'negative': 0})
+    X = dataset.text
+    y = dataset.bought.map({'Positive': 1, 'Negative': 0})
     return X, y
 
 
@@ -130,8 +130,8 @@ def main():
     # promote_to_production_threshold = 0.9
 
     # Load data and run model
-    file_path = '../data/IMDB_Dataset.csv'
-    ckpt_path = './sentiment_model.pkl'
+    file_path = '../data/review_data.csv'
+    ckpt_path = './purchase_model.pkl'
     movie_reviews = data_load(file_path)
     X, y = split_XY(movie_reviews)
     models = {
@@ -140,13 +140,11 @@ def main():
     # remember to log performance metrics (e.g., accuracy, F1-score)
     for model_name, model_func in models.items():
         # Initialize W&B for this specific model
-        run = init_wandb(project_name="Personalized Book Recommender",
+        run = init_wandb(project_name="Book_Purchase_Intention_Prediction",
                          experiment_name=f"{model_name}-Exp",
                          entity=entity, config=config, save_code=True)
 
         run.config.update({"model_name": model_name})
-        #                      "X_train": X,
-        #                      "y_train": y})
 
         create_pipeline(X, y, ckpt_path)
         # Promote to Staging or Production
@@ -155,8 +153,8 @@ def main():
         #     aliases = ["latest", "production"]
         artifact_data, artifact_model = log_artifact(
             run, data_path=file_path, model_path=ckpt_path,
-            dataset_name="imdb_dataset", model_name=run.config["model_name"],
-            alias="v1", metadata=None)
+            dataset_name="Amazon_Review_2023", model_name=run.config["model_name"],
+            alias="staging", metadata=None)
 
         # Promote to Staging or Production
         artifact_data.wait()
@@ -167,7 +165,7 @@ def main():
         print("Model registered and promoted to 'staging'.")
 
         run.summary["model_registered_name"] = f"{artifact_model.name}"
-        run.summary["registered_aliases"] = "v1"  # aliases
+        run.summary["registered_aliases"] = "staging"  # aliases
         run.summary["git_commit"] = git_hash
         run.summary["data_artifact"] = f"{artifact_data.name}"
 

@@ -110,91 +110,79 @@ def ensure_table(table_name=DDB_TABLE_NAME, create_if_missing=True,
 # = From DynamoDB =
 # =================
 def log_dynamodb_caches1(table):
-    """
-    Scan the DynamoDB table and return three lists:
-      texts: list of request_text
-      preds: list of predicted_sentiment
-      true_sent: list of true_sentiment (capitalized')
-    """
-    texts, preds, true_sent = [], [], []
+    texts, preds, true_recd = [], [], []
     response = table.scan()
     items = response.get("Items", [])
     for it in items:
         texts.append(it.get("request_text", ""))
-        preds.append(it.get("predicted_sentiment", "").capitalize())
-        true_sent.append(it.get("true_sentiment", "").capitalize())
-    return texts, preds, true_sent
+        preds.append(it.get("predicted_bought", "").capitalize())
+        true_recd.append(it.get("true_record", "").capitalize())
+    return texts, preds, true_recd
 
 
 def log_dynamodb_caches2(table=None):
     """
     Scan the DynamoDB table and return three lists:
       texts: list of request_text
-      preds: list of predicted_sentiment
-      true_sent: list of true_sentiment (capitalized')
+      preds: list of predicted_bought
+      true_sent: list of true_label (capitalized')
     """
     expr_names = {"#r": "request_text",
-                  "#p": "predicted_sentiment",
-                  "#t": "true_sentiment"}
+                  "#p": "predicted_bought",
+                  "#t": "true_record"}
     projection = ", ".join(expr_names.keys())  # "#r, #p, #t"
     scan_kwargs = {
         "ProjectionExpression": projection,
         "ExpressionAttributeNames": expr_names,
     }
-    texts, preds, true_sent = [], [], []
+    texts, preds, true_recd = [], [], []
     try:
         resp = table.scan(**scan_kwargs)
         items = resp.get("Items", [])
         for it in items:
-            texts.append(it.get("request_text", ""))
-            preds.append(it.get("predicted_sentiment", "").capitalize())
-            ts = it.get("true_sentiment", "")
-            true_sent.append(ts.capitalize() if isinstance(ts, str) else ts)
+            texts.append(it.get("request_text"))
+            preds.append(it.get("predicted_bought").capitalize())
+            ts = it.get("true_record")
+            true_recd.append(ts.capitalize() if isinstance(ts, str) else ts)
 
         while "LastEvaluatedKey" in resp:
             scan_kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
             resp = table.scan(**scan_kwargs)
             items = resp.get("Items", [])
             for it in items:
-                texts.append(it.get("request_text", ""))
-                preds.append(it.get("predicted_sentiment", "").capitalize())
-                ts = it.get("true_sentiment", "")
+                texts.append(it.get("request_text"))
+                preds.append(it.get("predicted_bought").capitalize())
+                ts = it.get("true_record")
                 true_sent.append(
                     ts.capitalize() if isinstance(ts, str) else ts)
 
     except ClientError as e:
-        try:
-            st.error(f"[DDB] scan failed: {e}")
-        except Exception:
-            pass
+        st.error(f"[DDB] scan ClientError: {e}")
         print(f"[DDB] scan ClientError: {e}")
         return [], [], []
     except Exception as e:
-        try:
-            st.error(f"[DDB] unexpected error during scan: {e}")
-        except Exception:
-            pass
+        st.error(f"[DDB] unexpected error during scan: {e}")
         print(f"[DDB] unexpected scan error: {e}")
         return [], [], []
 
-    return texts, preds, true_sent
+    return texts, preds, true_recd
 
 
-# ======================
-# = Load Movie Reviews =
-# ======================
-def log_imdb(path):
+# =====================
+# = Load Book Reviews =
+# =====================
+def log_reviews(path):
     if path.exists():
-        imdb = pd.read_csv(path)
-        st.write(f"Loaded {len(imdb)} IMDB reviews")
+        bkrv = pd.read_csv(path)
+        st.write(f"Loaded {len(bkrv)} Book reviews")
     else:
-        st.error(f"IMDB dataset not found at {path} \
+        st.error(f"Book Review dataset not found at {path} \
                    We customized dataset for further testing. \
                    Please use correct data file.")
         # st.stop()
-        imdb = pd.DataFrame({"review": ["I loved it", "Bad movie"],
-                             "sentiment": ["positive", "negative"]})
-    return imdb
+        bkrv = pd.DataFrame({"text": ["I loved it", "Bad book"],
+                             "bought": ["Positive", "Negative"]})
+    return bkrv
 
 
 # ======================
@@ -203,13 +191,12 @@ def log_imdb(path):
 # ======================
 def main():
     st.set_page_config(layout="wide")
-    st.title("Monitor Dashboard -- Objective Movie \
-              Review Sentiment Analyzer")
-    st.text("This app monitors the running status of Objective \
-             Movie Review Sentiment Analyzer, a FastAPI.")
+    st.title("Monitor Dashboard -- Book Purchase Intention Analyzer")
+    st.text("This app monitors the running status of Book \
+             Purchase Intention Analyzer, a FastAPI.")
 
-    # 3. Load the Log and IMDB data
-    st.header("1. Loading Log and IMDB Data")
+    # 3. Load the Log and Book Review data
+    st.header("1. Loading Log and Book Review Data")
 
     load_table = ensure_table(create_if_missing=True)
     print("Table status:", load_table.table_status)
@@ -218,36 +205,34 @@ def main():
     st.write(f"Finish DataLoading. Loaded {len(texts)} log entries.")
     text_len = [len(t) for t in texts]
     text_len = sorted(text_len)
-    st.write(f"Sample lengths from logs:\n{text_len[:5]}")
-    st.write(f"Sample predictions from logs:\n{preds[:5]}")
+    st.write(f"Sample lengths from logs:\n{text_len[:3]}")
+    st.write(f"Sample predictions from logs:\n{preds[:3]}")
 
-    imdb_path = Path("./IMDB_Dataset.csv")
-    imdb = log_imdb(imdb_path)
+    book_path = Path("./review_data.csv")
+    book = log_reviews(book_path)
 
-    imdb_len = [len(str(t)) for t in imdb["review"]]
-    gts = imdb["sentiment"].tolist()
-    st.write(f"Sample lengths from IMDB:\n{imdb_len[:5]}")
-    st.write(f"Sample predictions from IMDB:\n{gts[:5]}")
+    reviews_len = [len(str(t)) for t in book["text"]]
+    gts = book["text"].tolist()
+    st.write(f"Sample lengths:\n{reviews_len[:3]}")
+    st.write(f"Sample predictions:\n{gts[:3]}")
 
     # 4. Compare the distribution of sentence lengths
-    #    from both Log and IMDB data
+    #    from both Log and Book Review data
     st.header("2. Data Drift Analysis -- Review \
-               Lengths: IMDB vs. Log Requests")
+               Lengths: Book Review vs. Log Requests")
     len_im = pd.DataFrame({
-        "imdb_length": imdb_len
-        })
+        "review_length": reviews_len})
     len_te = pd.DataFrame({
-        "test_length": text_len
-        })
+        "test_length": text_len})
 
     fig_imdb = px.histogram(
         len_im,
-        x="imdb_length",
+        x="review_length",
         nbins=25,
         histnorm="density",
         opacity=0.75,
-        labels={"imdb_length": "Sentence Length"},
-        title="IMDB Review Length"
+        labels={"review_length": "Book Reviews Length"},
+        title="Book Review Length"
         )
 
     lo = len_te['test_length'].min()
@@ -259,7 +244,7 @@ def main():
         # nbins=10,
         histnorm="density",
         opacity=0.75,
-        labels={"test_length": "Sentence Length"},
+        labels={"test_length": "Test Reviews Length"},
         title="Logged Request Text Length"
         )
 
@@ -271,7 +256,7 @@ def main():
 
     fig1 = make_subplots(
         rows=1, cols=2,
-        subplot_titles=("IMDB Review Length", "Request Text Length"),
+        subplot_titles=("Book Review Length", "Logged Request Text Length"),
         shared_yaxes=False
         )
 
@@ -283,35 +268,35 @@ def main():
 
     fig1.update_layout(height=450, width=800, showlegend=False,
                        title_text="Histograms of Sentence Lengths: \
-                                   IMDB Review vs Logged Request Text",
+                                   Book Review vs Logged Request Text",
                        template="plotly_white")
 
     st.plotly_chart(fig1, use_container_width=True)
 
     # 5. Bar chart of sentiment distributions
-    st.header("3. Target Drift Analysis -- Sentiment \
-               Distribution: IMDB vs. Log Requests")
+    st.header("3. Target Drift Analysis -- Reviews \
+               Distribution: Original Book Reviews vs. Log Requests")
     # IMDB dataset has a 'sentiment' column with values 'positive'/'negative'
-    imdb_counts = imdb["sentiment"].value_counts().reset_index()
-    imdb_counts.columns = ["sentiment", "count"]
-    imdb_counts["source"] = "IMDB"
+    imdb_counts = book["bought"].value_counts().reset_index()
+    imdb_counts.columns = ["text", "count"]
+    imdb_counts["source"] = "Amazon"
 
     log_counts = pd.Series(preds).value_counts().reset_index()
-    log_counts.columns = ["sentiment", "count"]
+    log_counts.columns = ["text", "count"]
     log_counts["source"] = "Logs"
 
     fig2 = make_subplots(
         rows=1, cols=2,
-        subplot_titles=("IMDB Sentiment Counts", "Logged Sentiment Counts"),
+        subplot_titles=("Book Review Counts", "Logged Review Counts"),
         shared_yaxes=False
         )
 
     # Add IMDB bar chart in column 1
     fig2.add_trace(
         go.Bar(
-            x=imdb_counts["sentiment"],
+            x=imdb_counts["text"],
             y=imdb_counts["count"],
-            name="IMDB"
+            name="Amazon Book Review"
             ),
         row=1, col=1
         )
@@ -319,7 +304,7 @@ def main():
     # Add Logs bar chart in column 2
     fig2.add_trace(
         go.Bar(
-            x=log_counts["sentiment"],
+            x=log_counts["text"],
             y=log_counts["count"],
             name="Logs",
             marker_color='orange'
@@ -328,7 +313,7 @@ def main():
         )
 
     fig2.update_layout(
-        title="IMDB vs. Logs Sentiment Counts",
+        title="Book Review vs. Logs Counts",
         showlegend=True, width=800, height=400,
         template="plotly_white"
         )
@@ -336,23 +321,12 @@ def main():
     fig2.update_yaxes(title_text="Count", row=1, col=1)
     fig2.update_yaxes(title_text="Count", row=1, col=2)
 
-    # bar_df = pd.concat([imdb_counts, log_counts], ignore_index=True)
-    # fig2 = px.bar(
-    #     bar_df,
-    #     x="sentiment",
-    #     y="count",
-    #     color="source",
-    #     barmode="group",
-    #     title="IMDB vs. Logs Sentiment Counts"
-    #     )
-    # # disable shared y-axis so each subplot scales independently
-    # fig2.update_yaxes(matches=None)
     st.plotly_chart(fig2, use_container_width=True)
 
     # 6. Model Accuracy & User Feedback:
     st.header("4. Model Accuracy & User Feedback -- Compute \
                the Accuracy and Precision for Log Requests")
-    st.write(f"{preds},\n{true_sent}.")
+    st.write(f"{preds[:10]},\n{true_sent[:10]}.")
     accuracy = accuracy_score(true_sent, preds)
     precision = precision_score(true_sent, preds, average="macro",
                                 zero_division=0)

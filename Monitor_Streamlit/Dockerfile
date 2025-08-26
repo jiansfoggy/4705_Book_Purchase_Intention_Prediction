@@ -12,7 +12,7 @@ RUN python3 -m pip install -r requirements.txt
 
 # Copy the rest of the application's code into the container at /app
 COPY ./monitor_app.py /app/
-COPY ./IMDB_Dataset.csv /app/
+COPY ./review_data.csv /app/
 
 # Make port 8501 available to the world outside this container
 EXPOSE 8501

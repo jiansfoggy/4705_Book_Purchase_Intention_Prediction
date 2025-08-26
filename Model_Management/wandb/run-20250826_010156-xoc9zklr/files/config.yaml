@@ -1,0 +1,76 @@
+_wandb:
+    value:
+        cli_version: 0.21.1
+        code_path: source-Book_Purchase_Intention_Prediction-Model_Management_train_model.py
+        e:
+            83b89m4tqrd6yuw2krkw02zbhq8argv2:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 10
+                    memoryGb: 8
+                    name: Apple M3
+                    pcpuCores: 4
+                    ramTotalBytes: "8589934592"
+                    swapTotalBytes: "13958643712"
+                codePath: Model_Management/train_model.py
+                codePathLocal: train_model.py
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "245107195904"
+                        used: "230807703552"
+                email: jian_sun@gwu.edu
+                executable: /Users/jiansun/Documents/4447/venv/bin/python3
+                git:
+                    commit: 708b3358a9647086ca5c3222fa4d8aa385d44fb6
+                    remote: https://github.com/jiansfoggy/4705_Personalized_Book_Recommender.git
+                host: Mac
+                memory:
+                    total: "8589934592"
+                os: macOS-15.5-arm64-arm-64bit-Mach-O
+                program: /Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/Model_Management/train_model.py
+                python: CPython 3.13.5
+                root: /Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/Model_Management
+                startedAt: "2025-08-26T07:01:56.806675Z"
+                writerId: 83b89m4tqrd6yuw2krkw02zbhq8argv2
+        m: []
+        python_version: 3.13.5
+        t:
+            "1":
+                - 5
+                - 53
+            "2":
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+                - 62
+            "4": 3.13.5
+            "5": 0.21.1
+            "10":
+                - 20
+            "12": 0.21.1
+            "13": darwin-arm64
+X_train:
+    value: null
+alpha:
+    value: 1
+data version:
+    value: v1
+dataset:
+    value: Amazon Review 2023 -- Book Subset
+git_commit:
+    value: 708b335
+max_iter:
+    value: 1000
+model_name:
+    value: MultinomialNB
+random_state:
+    value: 42
+test_size:
+    value: 0.2
+y_train:
+    value: null
