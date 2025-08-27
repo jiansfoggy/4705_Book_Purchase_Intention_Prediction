@@ -35,6 +35,12 @@ Two **AWS EC2** servers run Linux environment to deploy FastAPI Backend and Stre
 - `CI/CD Pipeline`: `.github/workflows/ci.yml` lists workflows and points to check for automate code quality checking while pulling request to `master` branch.
 - `README.md`: introduces the entire project and displays how to run the project.
 
+## Conclusion
+
+It is impossible to predict whether the customer will buy the book or not by taking their reviews seriously.
+
+The other variables like rate number and purchase record are more valuable.
+
 ---
 
 ## Prerequisites
@@ -337,15 +343,23 @@ make init-volume
 make run
 docker logs <container_names> 
 ```
+
+If curl command returns status code like `200` or `302` in EC2 SSH terminal, the url are built successfully.
+
+```bash
+curl http://127.0.0.1:8000/docs
+curl http://127.0.0.1:8501
+```
+
 50. Check Streamlit Frontend User Interface.
 
     ```bash
-    http://<Public IPv4 address>:8501/
+    http://<Public IPv4 address for first server>:8501/
     ```
 51. Check FastAPI Backend.
 
     ```bash
-    http://<Public IPv4 address>:8000/docs
+    http://<Public IPv4 address for first server>:8000/docs
     ```
 52. You will see the following after using `make logs`. It means the Backend and Frontend are built successfully.
 
@@ -402,7 +416,6 @@ Create local log file at ./logs/prediction_logs.json
 ### 5.2.5 Run Monitor Dashboard on the server `EC2_for_Monitor`
 
 53. Repeat Steps 42--48 to prepare and connect to WandB and Amazon DynamoDB here.
-
 54. Let's activate Streamlit Model Monitor Dashboard.
 
 Make sure you are in the directory of `4705_Book_Purchase_Intention_Prediction`.
@@ -413,156 +426,50 @@ make build
 make run
 docker logs <container_names> 
 ```
-
-55. Check streamlit monitor dashboard.
-
-```bash
-http://<Public IPv4 address for server 2>:8501/
-```
 55. You will see
 
+```
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.
 
-56. Trouble shooting. Make sure that the service listens to `0.0.0.0` on EC2 for both ports
+  You can now view your Streamlit app in your browser.
 
-    ```bash
-    sudo apt install -y net-tools
-    sudo ss -tulpn | grep -E '(:8000|:8501)' || sudo netstat -tulpn 
-    sudo ss -tulpn | grep -E '(:8000|:8501)' || sudo netstat -tulpn | grep -E '(:8000|:8501)' || true
-    sudo ufw status verbose
-    sudo iptables -L -n -v
-    ps -ef | grep uvicorn
-    ```
+  Local URL: http://localhost:8501
+  Network URL: http://172.17.0.2:8501
+  External URL: http://34.203.215.2:8501
+```
 
-    If Streamlit listens to `0.0.0.0:8000` and FastAPI listens to `0.0.0.0:8501`, it connects successfully.
+56. Check and Visit Streamlit Model Monitor Dashboard.
 
-43. Check if curl command returns status code like `200` or `302` in EC2 SSH terminal to make sure url are built successfully.
+If curl command returns status code like `200` or `302` in EC2 SSH terminal, the url are built successfully.
 
-    ```bash
-    curl http://127.0.0.1:8000/docs
-    curl http://127.0.0.1:8501
-    ```
+```bash
+curl http://127.0.0.1:8501
+```
 
-44. Check streamlit monitor dashboard.
+Visit Dashboard
+```bash
+http://<Public IPv4 address for second server>:8501/
+```
 
-    ```bash
-    http://<Public IPv4 address>:8501/
-    ```
+This is screenshot of the streamlit page.
 
-45. Check FastAPI Service
+![We build the program successfully.](./Monitor_Streamlit/final_output.png)
 
-    ```bash
-    http://<Public IPv4 address>:8000/docs
-    ```
+57. Trouble shooting. Make sure that the service listens to `0.0.0.0` on EC2 for both ports
 
-60. The two service are deployed successfully, if there is no error poping up.
+```bash
+sudo apt install -y net-tools
+sudo ss -tulpn | grep -E '(:8000|:8501)' || sudo netstat -tulpn 
+sudo ss -tulpn | grep -E '(:8000|:8501)' || sudo netstat -tulpn | grep -E '(:8000|:8501)' || true
+sudo ufw status verbose
+sudo iptables -L -n -v
+ps -ef | grep uvicorn
+```
+
+If Streamlit listens to `0.0.0.0:8000` and FastAPI listens to `0.0.0.0:8501`, it connects successfully.
+
+58. The two service are deployed successfully, if there is no error poping up.
 
 ## 5.3. Documentation
 
 You are reading the `README.md` at the root path. Visit folders `FastAPI_Backend`, `Model_Management`, `Monitor_Streamlit`, and `Streamlit_Frontend` to find the README.md file for each task.
-
-
-
----
-
-## CI/CD with Github Actions
-  
-  Create **requirements.txt** file before pushing to Github.
-  ```bash
-  pip3 freeze > requirements.txt
-  ```
-
-- Code `ci.yml` file and save it under `.github/workflows`.
-
-- `ci.yml` helps check code quality when we push the project to github.
-
-- Create an emply `4705_jiansun_assignment6` folder and initialize it as Github repository.
-
-  ```bash
-  cd 4705_jiansun_assignment6
-  git init
-  git add .
-  git commit -m "Initial commit"
-  git remote add origin https://github.com/jiansfoggy/4705_jiansun_assignment6.git
-  git branch -M master
-  git push -u origin master
-  ```
-
-  Then, move all project files into `4705_jiansun_assignment6`, run the following code.
-
-  ```bash
-  git status # make sure we are on master branch
-  git checkout -b dev
-  git status # make sure we are on dev branch
-  git pull
-  git add --all
-  git commit -m "Update"
-  git push
-  ```
-
-- In the Github repository `4705_jiansun_assignment6`, click **Pull requests** to create new pull from `dev` to `master` branch, enter and submit commit, then yaml files runs like a script. 
-
-- Click **Actions** to view details and debug.
-
----
-
-## Build and run the API locally using **Makefile**:
-  
-  All docker commands are embedded into **Makefile**.
-
-  1. **Install dependencies**
-
-      In the `./4705_jiansun_assignment6`, Run `make build` to build the Docker image
-
-      ```bash
-      make build
-      ```
-
-  2. **Start the server**
-
-      Run `init-volume` to initialize and copy files in Prediction_FastAPI/logs/ to Docker Volume via a one-time container.
-
-      ```bash
-      make init-volume
-      ```
-
-      If success, it shows this on screen.
-
-      ```bash
-      >> Initializing volume 'logs-volume' with existing logs...
-      Unable to find image 'alpine:latest' locally
-      latest: Pulling from library/alpine
-      6e174226ea69: Pull complete 
-      Digest: sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
-      Status: Downloaded newer image for alpine:latest
-      >> Volume initialized.
-      ```
-
-      Run `make run` to activate and process the container from the image.
-
-      FastAPI and Streamlit share the logs via the same Docker Volume
-
-      ```bash
-      make run
-      ```
-      
-      Services are up:
-      ```bash
-      • FastAPI at http://localhost:8000
-      • Streamlit Monitor at http://localhost:8501
-      ```
-  
-  3. **Activate FastAPI**
-
-      Run the following code to activate the localhost
-      ```bash
-      uvicorn main:app --reload
-      ```
-
-  4. **Delete Containers and Images**
-
-      Run `make clean` to delete the created docker containers and images.
-
-      ```bash
-      make clean
-      ```
-
