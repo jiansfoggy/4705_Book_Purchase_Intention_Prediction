@@ -17,7 +17,7 @@ DDB_TABLE_NAME = os.environ.get("DDB_TABLE", "Backend_Log_Cache")
 DDB_REGION = os.environ.get("AWS_REGION", "us-east-1")
 os.makedirs("./logs", exist_ok=True)
 # https://chatgpt.com/s/t_68a724a091f48191baf58040a1f34bc8
-print(json.dumps(boto3.client("sts").get_caller_identity(), indent=2))
+# print(json.dumps(boto3.client("sts").get_caller_identity(), indent=2))
 
 
 # ================================
