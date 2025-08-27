@@ -45,9 +45,11 @@ Turn on **AWS Learner Lab** at step 1.
 
 ---
 
-Please go to each folder to find the introduction of first 4 phases.
+# Please go to each folder to find the introduction of first 4 phases.
 
 This file focuses on the last phase.
+
+---
 
 ## Phase 5: Containerization and Deployment
 
@@ -331,12 +333,12 @@ export WANDB_API_KEY=<WANDB_API_KEY>
 
 Make sure you are in the directory of `4705_Book_Purchase_Intention_Prediction`.
 
-    ```bash
-    make build
-    make init-volume
-    make run
-    docker logs <container_names>
-    ```
+```bash
+make build
+make init-volume
+make run
+docker logs <container_names> 
+```
 51. Check streamlit monitor dashboard.
 
     ```bash

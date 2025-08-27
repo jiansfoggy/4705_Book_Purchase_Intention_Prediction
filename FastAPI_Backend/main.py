@@ -23,11 +23,28 @@ os.makedirs("./logs", exist_ok=True)
 # = Check Running Environment:   =
 # = Local Machine or AWS Lab EC2 =
 # ================================
-def is_ec2_env():
+def is_ec2_env1():
     try:
         response = requests.get(
             "http://169.254.169.254/latest/meta-data/",
             timeout=0.2)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+def is_ec2_env():
+    try:
+        token_url = "http://169.254.169.254/latest/api/token"
+        headers = {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
+        token_response = requests.put(token_url, headers=headers, timeout=0.2)
+
+        if token_response.status_code != 200:
+            return False
+        token = token_response.text
+        metadata_url = "http://169.254.169.254/latest/meta-data/"
+        headers = {"X-aws-ec2-metadata-token": token}
+        response = requests.get(metadata_url, headers=headers, timeout=0.2)
+
         return response.status_code == 200
     except requests.RequestException:
         return False
