@@ -18,6 +18,7 @@ DDB_REGION = os.environ.get("AWS_REGION", "us-east-1")
 os.makedirs("./logs", exist_ok=True)
 print(json.dumps(boto3.client("sts").get_caller_identity(), indent=2))
 
+
 # ================================
 # = Check Running Environment:   =
 # = Local Machine or AWS Lab EC2 =
