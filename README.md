@@ -98,13 +98,13 @@ This file focuses on the last phase.
 14. We use 20GiB when setup **Configure storage**.
 15. For **Advanced details**, we `Enable` **Termination protection**. Then, copy belowed code and paste it to the bottom chat box.
 
-    ```bash
-    #!/bin/bash
-    dnf install -y httpd
-    systemctl enable httpd
-    systemctl start httpd
-    echo '<html><h1>Hello From Your Web Server!</h1></html>' > /var/www/html/index.html
-    ```
+```bash
+#!/bin/bash
+dnf install -y httpd
+systemctl enable httpd
+systemctl start httpd
+echo '<html><h1>Hello From Your Web Server!</h1></html>' > /var/www/html/index.html
+```
 
 18. Click `Launch instance` and enter new page.
 19. Click `view all instance` at the bottom right corner to enter a new page. Then, click `refresh` symbol near `connect` button and wait for initiaizing.
@@ -143,7 +143,6 @@ python3 -m venv ec2
 ```
 
 33. Install Docker
-
 ```bash
 # Add Docker's official GPG key:
 # Enter yes or y if asked
@@ -155,7 +154,7 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 
 # Add the repository to Apt sources:
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.ahttps://download.docker.com/linux/ubuntu \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
@@ -165,7 +164,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 sudo docker run hello-world
 ```
 
-35. Install Git and connect to Github
+34. Install Git and connect to Github
 
 ```bash
 # Enter yes or y if asked
@@ -181,10 +180,10 @@ ssh-add ~/.ssh/id_ed25519
 cat ~/.ssh/id_ed25519.pub
 ```
 
-36. Go to Github, enter **Settings** and **SSH and GPG keys**, click **New SSH key**.
-37. Set Title as `AWS-EC2`, copy ssh-rsa from the terminal, and paste it to the `Key` box.
-38. Click `Add SSH key`, enter Github password, click `Confirm`.
-39. Go back to terminal and download Git Repository `4705_Book_Purchase_Intention_Prediction`.
+35. Go to Github, enter **Settings** and **SSH and GPG keys**, click **New SSH key**.
+36. Set Title as `AWS-EC2`, copy ssh-rsa from the terminal, and paste it to the `Key` box.
+37. Click `Add SSH key`, enter Github password, click `Confirm`.
+38. Go back to terminal and download Git Repository `4705_Book_Purchase_Intention_Prediction`.
 
     ```bash
     sudo usermod -aG docker $USER
@@ -198,7 +197,7 @@ cat ~/.ssh/id_ed25519.pub
 
 ### 5.2.2 Download Amazon Reviews Dataset 2023
 
-40. Run the following codes in the command line to download dataset.
+39. Run the following codes in the command line to download dataset.
 
 To make the program runs smoothly, we have to create a subset out of Books.jsonl. 
 
@@ -224,7 +223,6 @@ Here you may need to increase the Volume size to continue decompressing data fil
 lsblk # make sure the volume size gets changed.
 df -h
 gunzip Books.jsonl.gz
-rm -rf ./data/Books.jsonl.gz
 cd ..
 python3 -m pip install pandas
 python3 read_data.py
@@ -233,7 +231,7 @@ rm -rf ./data/Books.jsonl
 
 Now, you have two csv files, `review_data.csv` and `test_data.json`, in the `./data`.
 
-41. Move data files to target path.
+40. Move data files to target path.
 
 ```bash
 cp ./data/review_data.csv ./Monitor_Streamlit/
@@ -242,16 +240,16 @@ mv ./data/test_data.json ./FastAPI_Backend
 
 ### 5.2.3 Manually deploy the service on second EC2
 
-42. Repeat Steps 7--19 and 29--41 to create second EC2 server with the following changes
+41. Repeat Steps 7--19 and 29--40 to create second EC2 server with the following changes
 
 * Start from step 7, since we already setup .pem file in Steps 1--6.
 * At Step 8: Set Name as `EC2_for_Monitor`.
 * At Step 13: About **firewall**, click **Select existing Security group** and use `Final_Porject`, the one we just created for first EC2 server. 
-* Skip Steps 20--28, since Security Group `Final_Porject` is already there. Don't need to create duplicate one.
+* Repeat Steps 20--28 to create new Security Group `Monitor` to avoid further trouble. Change description at will, but keep the other information unchanged.
 
 ### 5.2.4 Run User Interface and FastAPI services on the server `EC2_for_Frontend_Backend`
 
-43. Setup WandB
+42. Setup WandB
 
 Go to [here](https://wandb.ai/quickstart?product=models) and copy **WANDB_API_KEY** in the highlighted yellow block.
 
@@ -261,18 +259,18 @@ wandb login # copy and paste API Key while asking
 export WANDB_API_KEY=<WANDB_API_KEY>
 ```
 
-44. Setup Amazon DynamoDB: Launch **AWS Academy Learner Lab** and click **AWS Details** on the top right.
-45. Click **AWS Details** on the top right. 
-46. Under **Cloud Access**, click **Show**, and record `aws_access_key_id`
+43. Setup Amazon DynamoDB: Launch **AWS Academy Learner Lab** and click **AWS Details** on the top right.
+44. Click **AWS Details** on the top right. 
+45. Under **Cloud Access**, click **Show**, and record `aws_access_key_id`
 , `aws_secret_access_key`, `aws_session_token`, `AWSAccountId`, and `Region`.
-47. Open **terminal** and install `boto3`, `awscli`, `hashlib`.
+46. Open **terminal** and install `boto3`, `awscli`, `hashlib`.
    
     ```bash
     python3 -m pip install --upgrade pip
     python3 -m pip install boto3 awscli
     ```
 
-48. In the terminal, run `aws configure` and enter copied `aws_access_key_id`, `aws_secret_access_key`, `Region`, and `json`.
+47. In the terminal, run `aws configure` and enter copied `aws_access_key_id`, `aws_secret_access_key`, `Region`, and `json`.
   
     If you need to delete the old or wrong configuration info, run these lines:
     
@@ -294,7 +292,7 @@ export WANDB_API_KEY=<WANDB_API_KEY>
     aws sts get-caller-identity
     ```
     
-    If you see the following feedback, you successfully set up a valid permit.
+    If you see the following example feedback, you successfully set up a valid permit.
     ```bash 
     (venv) jiansun@Mac FastAPI_Backend % aws configure list
           Name                    Value             Type    Location
@@ -311,7 +309,7 @@ export WANDB_API_KEY=<WANDB_API_KEY>
     }
     ```
 
-49. If Step 48 works badly, create a `.env` file under `4705_Book_Purchase_Intention_Prediction`.
+48. If Step 48 works badly, create a `.env` file under `4705_Book_Purchase_Intention_Prediction`.
 
 - Given that the program is deployed in the Docker environment, it can't read `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc from local machine. We need to take these information to Docker environment while building it.
 
@@ -329,7 +327,7 @@ export WANDB_API_KEY=<WANDB_API_KEY>
         cp ./.env ./FastAPI_Backend
         cp ./.env ./Monitor_Streamlit
         ```
-50. Now, Amazon DynamoDB is ready. Let's activate Frontend Streamlit User Interface and FastAPI Backend.
+49. Now, Amazon DynamoDB is ready. Let's activate Frontend Streamlit User Interface and FastAPI Backend.
 
 Make sure you are in the directory of `4705_Book_Purchase_Intention_Prediction`.
 
@@ -339,19 +337,29 @@ make init-volume
 make run
 docker logs <container_names> 
 ```
-51. Check streamlit monitor dashboard.
+50. Check Streamlit Frontend User Interface.
 
     ```bash
     http://<Public IPv4 address>:8501/
     ```
-52. Check FastAPI Service
+51. Check FastAPI Backend.
 
     ```bash
     http://<Public IPv4 address>:8000/docs
     ```
-53. You will see the following after using `make logs`
+52. You will see the following after using `make logs`. It means the Backend and Frontend are built successfully.
 
 ```
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.
+
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://172.18.0.3:8501
+  External URL: http://54.197.165.152:8501
+
+
    FastAPI   Starting production server 🚀
  
              Searching for package file structure from directories with         
@@ -376,56 +384,56 @@ docker logs <container_names>
       INFO   Waiting for application startup.
       INFO   Application startup complete.
       INFO   Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-      INFO   97.228.134.68:53028 - "GET /docs HTTP/1.1" 200
-      INFO   97.228.134.68:53028 - "GET /openapi.json HTTP/1.1" 200
-wandb: Currently logged in as: jsfoggy to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
-Detected local environment.                Using AWS credentials from env/config...
 [DDB] Table 'Backend_Log_Cache' found.
 Table status: ACTIVE
-Could not load model from W&B: project 'Book_Purchase_Intention_Prediction' not found under entity 'jsfoggy'
-Model loaded locally from ./purchase_model.pkl
+      INFO   172.18.0.3:47084 - "POST /predict HTTP/1.1" 200
+wandb: W&B API key is configured. Use `wandb login --relogin` to force relogin
+wandb: WARNING Artifact.get_path(name) is deprecated, use Artifact.get_entry(name) instead.
+Detected EC2 (Learner Lab). Using IAM Role credentials...
+[DDB] Table 'Backend_Log_Cache' found.
+Table status: ACTIVE
+/code/artifacts/MultinomialNB-artifact:v1/purchase_model.pkl
+Model 'MultinomialNB-artifact:latest' loaded successfully from W&B.
 Create local log file at ./logs/prediction_logs.json
 [DDB] put succeed: Cache data to DynamoDB
-      INFO   172.18.0.3:50366 - "POST /predict HTTP/1.1" 200
-
-Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.
-
-
-  You can now view your Streamlit app in your browser.
-
-  Local URL: http://localhost:8501
-  Network URL: http://172.18.0.3:8501
-  External URL: http://3.83.17.128:8501
+      INFO   172.18.0.3:37884 - "POST /predict HTTP/1.1" 200
 ```
 
 ### 5.2.5 Run Monitor Dashboard on the server `EC2_for_Monitor`
 
-54. Repeat Steps 43--49 to prepare and connect to WandB and Amazon DynamoDB here.
+53. Repeat Steps 42--48 to prepare and connect to WandB and Amazon DynamoDB here.
 
-53. Let's activate Streamlit Model Monitor Dashboard.
+54. Let's activate Streamlit Model Monitor Dashboard.
 
 Make sure you are in the directory of `4705_Book_Purchase_Intention_Prediction`.
 
-    ```bash
-    cd Monitor_Streamlit
-    make build
-    make run
-    ```
+```bash
+cd Monitor_Streamlit
+make build
+make run
+docker logs <container_names> 
+```
 
-54. You will see
+55. Check streamlit monitor dashboard.
+
+```bash
+http://<Public IPv4 address for server 2>:8501/
+```
+55. You will see
 
 
-42. Make sure that the service listens to `0.0.0.0` on EC2 for both ports
+56. Trouble shooting. Make sure that the service listens to `0.0.0.0` on EC2 for both ports
 
     ```bash
     sudo apt install -y net-tools
+    sudo ss -tulpn | grep -E '(:8000|:8501)' || sudo netstat -tulpn 
     sudo ss -tulpn | grep -E '(:8000|:8501)' || sudo netstat -tulpn | grep -E '(:8000|:8501)' || true
     sudo ufw status verbose
     sudo iptables -L -n -v
     ps -ef | grep uvicorn
     ```
 
-    If Streamlit listens to `0.0.0.0:8000` and FastAPI listens to `0.0.0.0:8501`, we connect successfully.
+    If Streamlit listens to `0.0.0.0:8000` and FastAPI listens to `0.0.0.0:8501`, it connects successfully.
 
 43. Check if curl command returns status code like `200` or `302` in EC2 SSH terminal to make sure url are built successfully.
 

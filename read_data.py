@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 
-# 文件路径
+# file path
 review = "./data/Books.jsonl"
 meta = "./data/meta_Books.jsonl"
 
