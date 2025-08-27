@@ -143,8 +143,7 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
         # Pull certain version from Model Registry
         # and Download to local path
         # method 1
-        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_\
-                             Prediction/{model_name}:{alias}")
+        art = api.artifact(f"jsfoggy/Book_Purchase_Intention_Prediction/{model_name}:{alias}")
         artifact = art.get_path("purchase_model.pkl").download()
         print(artifact)
         model = joblib.load(artifact)
