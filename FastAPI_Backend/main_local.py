@@ -145,7 +145,7 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
         art = api.artifact(f"jsfoggy/Book_Purchase_Intention_\
                              Prediction/{model_name}:{alias}")
         artifact = art.get_path("purchase_model.pkl").download()
-
+        print(artifact)
         model = joblib.load(artifact)
         print(f"Model '{model_name}:{alias}' loaded successfully from W&B.")
         return model

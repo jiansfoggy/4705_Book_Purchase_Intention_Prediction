@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 DDB_TABLE_NAME = os.environ.get("DDB_TABLE", "Backend_Log_Cache")
 DDB_REGION = os.environ.get("AWS_REGION", "us-east-1")
 os.makedirs("./logs", exist_ok=True)
-
+print(json.dumps(boto3.client("sts").get_caller_identity(), indent=2))
 
 # ================================
 # = Check Running Environment:   =
@@ -156,7 +156,7 @@ def load_artifact(model_name="MultinomialNB-artifact", alias="latest"):
         art = api.artifact(f"jsfoggy/Book_Purchase_Intention_\
                              Prediction/{model_name}:{alias}")
         artifact = art.get_path("purchase_model.pkl").download()
-
+        print(artifact)
         model = joblib.load(artifact)
         print(f"Model '{model_name}:{alias}' loaded successfully from W&B.")
         return model
@@ -281,6 +281,11 @@ async def predict(input_data: TextInput):
 #      -H "Content-Type: application/json" \
 #      -d '{"text":"Four Stars. compelling read","bought":"Negative"}' \
 #      http://127.0.0.1:8000/predict
+
+# curl -X POST \
+#      -H "Content-Type: application/json" \
+#      -d '{"text":"Four Stars. compelling read","bought":"Negative"}' \
+#      http://52.207.176.26:8000/predict
 
 # curl -X POST \
 #      -H "Content-Type: application/json" \
