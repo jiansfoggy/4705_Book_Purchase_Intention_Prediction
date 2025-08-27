@@ -32,6 +32,7 @@ def is_ec2_env1():
     except requests.RequestException:
         return False
 
+
 def is_ec2_env():
     try:
         token_url = "http://169.254.169.254/latest/api/token"
