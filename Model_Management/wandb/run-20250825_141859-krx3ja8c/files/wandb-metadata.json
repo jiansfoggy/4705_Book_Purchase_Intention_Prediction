@@ -1,0 +1,47 @@
+{
+  "os":  "macOS-15.5-arm64-arm-64bit-Mach-O",
+  "python":  "CPython 3.13.5",
+  "startedAt":  "2025-08-25T20:18:59.037212Z",
+  "args":  [
+    "--meta",
+    "../data/meta_data.csv",
+    "--reviews",
+    "../data/review_data.csv",
+    "--train_size",
+    "30000",
+    "--test_size",
+    "100"
+  ],
+  "program":  "/Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/Model_Management/recommand_model.py",
+  "codePath":  "Model_Management/recommand_model.py",
+  "codePathLocal":  "recommand_model.py",
+  "git":  {
+    "remote":  "https://github.com/jiansfoggy/4705_Personalized_Book_Recommender.git",
+    "commit":  "708b3358a9647086ca5c3222fa4d8aa385d44fb6"
+  },
+  "email":  "jian_sun@gwu.edu",
+  "root":  "/Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/Model_Management",
+  "host":  "Mac",
+  "executable":  "/Users/jiansun/Documents/4447/venv/bin/python3",
+  "cpu_count":  8,
+  "cpu_count_logical":  8,
+  "disk":  {
+    "/":  {
+      "total":  "245107195904",
+      "used":  "230609174528"
+    }
+  },
+  "memory":  {
+    "total":  "8589934592"
+  },
+  "apple":  {
+    "name":  "Apple M3",
+    "ecpuCores":  4,
+    "pcpuCores":  4,
+    "gpuCores":  10,
+    "memoryGb":  8,
+    "swapTotalBytes":  "10737418240",
+    "ramTotalBytes":  "8589934592"
+  },
+  "writerId":  "epchr8wdeq9nr2d892fr7c32a8ujybqq"
+}

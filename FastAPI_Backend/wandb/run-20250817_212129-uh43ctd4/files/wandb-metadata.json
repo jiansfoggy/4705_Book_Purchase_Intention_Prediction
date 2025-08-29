@@ -1,0 +1,37 @@
+{
+  "os":  "macOS-15.5-arm64-arm-64bit-Mach-O",
+  "python":  "CPython 3.13.5",
+  "startedAt":  "2025-08-18T03:21:29.664248Z",
+  "program":  "/Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/FastAPI_Backend/main.py",
+  "codePath":  "FastAPI_Backend/main.py",
+  "codePathLocal":  "main.py",
+  "git":  {
+    "remote":  "https://github.com/jiansfoggy/4705_Personalized_Book_Recommender.git",
+    "commit":  "b96b19cf1380c2f7b270bcf9eda6e81a8eef3d9e"
+  },
+  "email":  "jian_sun@gwu.edu",
+  "root":  "/Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/FastAPI_Backend",
+  "host":  "Mac",
+  "executable":  "/Users/jiansun/Documents/4447/venv/bin/python3",
+  "cpu_count":  8,
+  "cpu_count_logical":  8,
+  "disk":  {
+    "/":  {
+      "total":  "245107195904",
+      "used":  "209740935168"
+    }
+  },
+  "memory":  {
+    "total":  "8589934592"
+  },
+  "apple":  {
+    "name":  "Apple M3",
+    "ecpuCores":  4,
+    "pcpuCores":  4,
+    "gpuCores":  10,
+    "memoryGb":  8,
+    "swapTotalBytes":  "10737418240",
+    "ramTotalBytes":  "8589934592"
+  },
+  "writerId":  "x0pgqc4xgufv9zxiftralgxncajlui0j"
+}

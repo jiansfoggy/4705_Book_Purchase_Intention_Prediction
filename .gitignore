@@ -1,0 +1,38 @@
+# Local Environment
+.DS_Store
+*.swp
+*.swo
+*command
+
+# Python Related
+__pycache__/ 
+*.pyc
+.env
+*.env
+*.pytest_cache
+./Monitor_Streamlit/review_data.csv
+
+# Log
+*.log 
+*.dump 
+
+# Files
+*file_update_git.sh
+*file_upload_git.sh
+*git_init.sh
+*backup_main.py
+*read_data.py
+*funksvd.py
+*recommand_model.py
+*.rtf
+AWS_EC2/
+*data/
+*backup/
+
+# Other
+*.tmp 
+*.bak
+*.orig
+ci.yml
+Monitor_Streamlit/review_data.csv
+Model_Management/recommand_model.py

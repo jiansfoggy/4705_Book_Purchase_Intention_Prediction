@@ -1,0 +1,81 @@
+_wandb:
+    value:
+        cli_version: 0.21.1
+        code_path: source-Personalized-Book-Recommender-Model_Management_recommand_model.py
+        e:
+            epchr8wdeq9nr2d892fr7c32a8ujybqq:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 10
+                    memoryGb: 8
+                    name: Apple M3
+                    pcpuCores: 4
+                    ramTotalBytes: "8589934592"
+                    swapTotalBytes: "10737418240"
+                args:
+                    - --meta
+                    - ../data/meta_data.csv
+                    - --reviews
+                    - ../data/review_data.csv
+                    - --train_size
+                    - "30000"
+                    - --test_size
+                    - "100"
+                codePath: Model_Management/recommand_model.py
+                codePathLocal: recommand_model.py
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "245107195904"
+                        used: "230609174528"
+                email: jian_sun@gwu.edu
+                executable: /Users/jiansun/Documents/4447/venv/bin/python3
+                git:
+                    commit: 708b3358a9647086ca5c3222fa4d8aa385d44fb6
+                    remote: https://github.com/jiansfoggy/4705_Personalized_Book_Recommender.git
+                host: Mac
+                memory:
+                    total: "8589934592"
+                os: macOS-15.5-arm64-arm-64bit-Mach-O
+                program: /Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/Model_Management/recommand_model.py
+                python: CPython 3.13.5
+                root: /Users/jiansun/Documents/4705/4705_Personalized_Book_Recommender/Model_Management
+                startedAt: "2025-08-25T20:18:59.037212Z"
+                writerId: epchr8wdeq9nr2d892fr7c32a8ujybqq
+        m: []
+        python_version: 3.13.5
+        t:
+            "1":
+                - 5
+                - 53
+            "2":
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+                - 62
+            "4": 3.13.5
+            "5": 0.21.1
+            "10":
+                - 20
+            "12": 0.21.1
+            "13": darwin-arm64
+dataset:
+    value: Amazon Books subset
+dataset_version:
+    value: v1
+git_commit:
+    value: 708b335
+max_features:
+    value: 5000
+mf_epochs:
+    value: 100
+mf_factors:
+    value: 40
+model_name:
+    value: content
+svd_dim:
+    value: 50
